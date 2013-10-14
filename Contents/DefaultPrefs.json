@@ -1,0 +1,8 @@
+[
+	{
+		"id":"yt_pattern",
+		"label":"File naming pattern",
+		"type":"text",
+		"default":"\\[(?P<id>.{11})\\]"
+	}
+]
