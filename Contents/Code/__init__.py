@@ -40,6 +40,8 @@ class YouTubeAgent(Agent.Movies):
 
 		if json_obj:
 			metadata.title = json_obj['title']
+			metadata.studio = json_obj['uploader']
+                        metadata.rating = json_obj['rating'] * 2
 			metadata.summary = json_obj['description']
 			metadata.duration = json_obj['duration'] * 1000
 			metadata.originally_available_at = Datetime.ParseDate(json_obj['uploaded']).date()
