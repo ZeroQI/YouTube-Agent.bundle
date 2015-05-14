@@ -1,16 +1,20 @@
-YOUTUBE_VIDEO_DETAILS = 'http://gdata.youtube.com/feeds/api/videos/%s?v=2&alt=jsonc'
+YOUTUBE_VIDEO_DETAILS = 'https://m.youtube.com/watch?ajax=1&v=%s'
 RE_YT_ID = Regex('[a-z0-9\-_]{11}', Regex.IGNORECASE)
 
 def Start():
+
 	HTTP.CacheTime = CACHE_1MONTH
-	HTTP.Headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.69 Safari/537.36'
+	HTTP.Headers['User-Agent'] = 'Mozilla/5.0 (iPad; CPU OS 7_0_4 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11B554a Safari/9537.54'
+	HTTP.Headers['Accept-Language'] = 'en-us'
 
 class YouTubeAgent(Agent.Movies):
+
 	name = 'YouTube'
 	languages = [Locale.Language.NoLanguage]
 	primary_provider = True
 
 	def search(self, results, media, lang):
+
 		filename = String.Unquote(media.filename)
 
 		if Prefs['yt_pattern'] != '':
@@ -32,26 +36,23 @@ class YouTubeAgent(Agent.Movies):
 				)
 
 	def update(self, metadata, media, lang):
+
 		try:
-			json_obj = JSON.ObjectFromURL(YOUTUBE_VIDEO_DETAILS % metadata.id)['data']
+			json = HTTP.Request(YOUTUBE_VIDEO_DETAILS % metadata.id).content[4:]
+			json_obj = JSON.ObjectFromString(json)['content']['video']
 		except:
-			Log('Could not retrieve data from YouTube API for: %s' % metadata.id)
+			Log('Could not retrieve data from YouTube for: %s' % metadata.id)
 			json_obj = None
 
 		if json_obj:
 			metadata.title = json_obj['title']
-			metadata.studio = json_obj['uploader']
-			metadata.rating = json_obj['rating'] * 2
+			metadata.studio = json_obj['public_name']
 			metadata.summary = json_obj['description']
-			metadata.duration = json_obj['duration'] * 1000
-			metadata.originally_available_at = Datetime.ParseDate(json_obj['uploaded']).date()
+			metadata.duration = json_obj['length_seconds'] * 1000
 
-			thumb = None
-			if 'hqDefault' in json_obj['thumbnail']:
-				thumb = json_obj['thumbnail']['hqDefault']
-			elif 'sqDefault' in json_obj['thumbnail']:
-				thumb = json_obj['thumbnail']['sqDefault']
+			date = Datetime.ParseDate(json_obj['time_created_text'])
+			metadata.originally_available_at = date.date()
+			metadata.year = date.year
 
-			if thumb:
-				poster = HTTP.Request(thumb)
-				metadata.posters[thumb] = Proxy.Preview(poster, sort_order=1)
+			thumb = json_obj['thumbnail_for_watch']
+			metadata.posters[thumb] = Proxy.Preview(HTTP.Request(thumb).content, sort_order=1)
