@@ -12,6 +12,7 @@ class YouTubeAgent(Agent.Movies):
 	name = 'YouTube'
 	languages = [Locale.Language.NoLanguage]
 	primary_provider = True
+	accepts_from = ['com.plexapp.agents.localmedia']
 
 	def search(self, results, media, lang):
 
