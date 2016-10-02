@@ -40,20 +40,21 @@ class YouTubeAgent(Agent.Movies):
 
 		try:
 			json = HTTP.Request(YOUTUBE_VIDEO_DETAILS % metadata.id).content[4:]
-			json_obj = JSON.ObjectFromString(json)['content']['video']
+			json_obj = JSON.ObjectFromString(json)['content']
 		except:
 			Log('Could not retrieve data from YouTube for: %s' % metadata.id)
 			json_obj = None
 
 		if json_obj:
-			metadata.title = json_obj['title']
-			metadata.studio = json_obj['public_name']
-			metadata.summary = json_obj['description']
-			metadata.duration = json_obj['length_seconds'] * 1000
 
-			date = Datetime.ParseDate(json_obj['time_created_text'])
+			metadata.title = json_obj['video']['title']
+			metadata.duration = json_obj['video']['length_seconds'] * 1000
+
+			thumb = 'https://%s' % (json_obj['video']['thumbnail_for_watch'].split('//')[-1])
+			metadata.posters[thumb] = Proxy.Preview(HTTP.Request(thumb).content, sort_order=1)
+
+			metadata.summary = json_obj['video_main_content']['contents'][0]['description']['runs'][0]['text']
+
+			date = Datetime.ParseDate(json_obj['video_main_content']['contents'][0]['date_text']['runs'][0]['text'].split('Published on ')[-1])
 			metadata.originally_available_at = date.date()
 			metadata.year = date.year
-
-			thumb = json_obj['thumbnail_for_watch']
-			metadata.posters[thumb] = Proxy.Preview(HTTP.Request(thumb).content, sort_order=1)
