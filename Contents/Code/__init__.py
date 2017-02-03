@@ -58,3 +58,15 @@ class YouTubeAgent(Agent.Movies):
 			date = Datetime.ParseDate(json_obj['video_main_content']['contents'][0]['date_text']['runs'][0]['text'].split('Published on ')[-1])
 			metadata.originally_available_at = date.date()
 			metadata.year = date.year
+
+			# Add YouTube user as director
+			metadata.directors.clear()
+
+			if Prefs['add_user_as_director']:
+
+				try:
+					meta_director = metadata.directors.new()
+					meta_director.name = json_obj['video_main_content']['contents'][0]['short_byline_text']['runs'][0]['text']
+					meta_director.photo = json_obj['video_main_content']['contents'][0]['thumbnail']['url'].replace('/s88-', '/s512-')
+				except:
+					pass
