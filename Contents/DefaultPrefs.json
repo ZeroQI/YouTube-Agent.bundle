@@ -4,5 +4,11 @@
 		"label":"File naming pattern",
 		"type":"text",
 		"default":"\\[(?P<id>.{11})\\]"
+	},
+	{
+		"id":"add_user_as_director",
+		"label":"Set YouTube usernames as director in metadata",
+		"type":"bool",
+		"default":"false"
 	}
 ]
