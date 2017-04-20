@@ -55,7 +55,7 @@ class YouTubeAgent(Agent.Movies):
 
 			metadata.summary = json_obj['video_main_content']['contents'][0]['description']['runs'][0]['text']
 
-			date = Datetime.ParseDate(json_obj['video_main_content']['contents'][0]['date_text']['runs'][0]['text'].split('Published on ')[-1])
+			date = Datetime.ParseDate(json_obj['video_main_content']['contents'][0]['date_text']['runs'][0]['text'].split('on ')[-1])
 			metadata.originally_available_at = date.date()
 			metadata.year = date.year
 
