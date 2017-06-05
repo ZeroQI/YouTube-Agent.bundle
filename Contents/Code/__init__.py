@@ -53,7 +53,10 @@ class YouTubeAgent(Agent.Movies):
 			thumb = 'https://%s' % (json_obj['video']['thumbnail_for_watch'].split('//')[-1])
 			metadata.posters[thumb] = Proxy.Preview(HTTP.Request(thumb).content, sort_order=1)
 
-			metadata.summary = json_obj['video_main_content']['contents'][0]['description']['runs'][0]['text']
+			try:
+				metadata.summary = json_obj['video_main_content']['contents'][0]['description']['runs'][0]['text']
+			except IndexError:
+				Log('No Summary for: %s' % metadata.id)
 
 			date = Datetime.ParseDate(json_obj['video_main_content']['contents'][0]['date_text']['runs'][0]['text'].split('on ')[-1])
 			metadata.originally_available_at = date.date()
