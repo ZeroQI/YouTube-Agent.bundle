@@ -3,6 +3,7 @@ import os
 YOUTUBE_VIDEO_DETAILS = 'https://m.youtube.com/watch?ajax=1&v=%s'
 YOUTUBE_VIDEO_SEARCH  = 'https://content.googleapis.com/youtube/v3/search?q=%s&maxResults=1&part=snippet&key=%s'
 RE_YT_ID              = Regex('[a-z0-9\-_]{11}', Regex.IGNORECASE)
+API_KEY               = 'AIzaSyC2q8yjciNdlYRNdvwbb7NEcDxBkv1Cass'
 
 def Start():
   HTTP.CacheTime                  = CACHE_1MONTH
@@ -28,7 +29,7 @@ class YouTubeAgent(Agent.Movies):
         results.Append( MetadataSearchResult( id=yt_id,  name=media.name, year=None, score=99, lang=lang ) )
       else:
         try:
-          json_obj = JSON.ObjectFromURL(YOUTUBE_VIDEO_SEARCH % (String.Quote(media.name, usePlus=False), Prefs['yt_apikey']))
+          json_obj = JSON.ObjectFromURL(YOUTUBE_VIDEO_SEARCH % (String.Quote(media.name, usePlus=False), API_KEY))  #Prefs['yt_apikey']
           if json_obj['pageInfo']['totalResults']:
             if filename == json_obj['items'][0]['snippet']['title']:   
               Log('search() - found matching title: "{}", description: "{}"'.format(json_obj['items'][0]['snippet']['title'], json_obj['items'][0]['snippet']['description']))
