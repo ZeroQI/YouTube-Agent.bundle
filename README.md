@@ -1,8 +1,6 @@
 # YouTube-Agent.bundle Plex Movie library agent 
 forked from paulds8 and sander1's 'YouTube-Agent.bundle'
 
-libraries for youtube videos
-
 Naming convention:
 - use '[xxxxxx]' youtube video id in filename
 - use exact youtube video title as filename
