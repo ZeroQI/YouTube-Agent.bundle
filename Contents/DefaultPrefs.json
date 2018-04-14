@@ -1,5 +1,4 @@
 [
   { "id":"yt_pattern",           "label":"File naming pattern",                           "type":"text", "default":"\\[(?P<id>.{11})\\]" },
-  { "id":"add_user_as_director", "label":"Set YouTube usernames as director in metadata", "type":"bool", "default":"false"               },
-  { "id":"yt_apikey",            "label":"Youtube v3 API key",                            "type":"text", "default":"<INSERTKEY>"         }
+  { "id":"add_user_as_director", "label":"Set YouTube usernames as director in metadata", "type":"bool", "default":"false"               }
 ]
