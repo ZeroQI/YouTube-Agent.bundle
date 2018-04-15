@@ -1,20 +1,24 @@
-# YouTube-Agent.bundle Plex Movie library agent 
+# YouTube-Agent.bundle Plex Movie & TV Series library agent 
 
-Forked from paulds8 and sander1's 'YouTube-Agent.bundle':
 
-sander1
-https://github.com/sander1/YouTube-Agent.bundle
-https://forums.plex.tv/discussion/83106/rel-youtube-metadata-agent
+YouTube IDs
+- Playlist id: PL and 16 hexadecimal characters 0-9 and A-F
+- Video id: 11 chars long 0-9 and a-z, can have also'_-'
 
-paulds8
-https://github.com/paulds8/YouTube-Agent.bundle/tree/namematch
-https://forums.plex.tv/discussion/300800/youtube-agent-matching-on-name
+Naming convention for Movie/Home Video library:
+- filename without extension named exactly the same as the YouTube video
+- filename with youtube video id '[youtube-xxxxxxxxxx]'
 
-Naming convention:
-- use '[xxxxxx]' youtube video id in filename
-- use exact youtube video title as filename
+Naming convention for TV Series library:
+- movies have to be put in identically named folder named exactly the same as the YouTube video or have youtube video id
+- series foldername with with youtube playlist id '[youtube-PLxxxxxxxxxxxxxxxx'] in title or inside a youtube.id file at its root
+- season folder with youtube playlist id '[youtube-PLxxxxxxxxxxxxxxxx'] in title or inside a youtube.id file at its root
 
-Fields:
+Note:
+- The Absolute Series Scanner will support youtube.id file in series folder and pass it to the agent through the series title
+- The agent will support the following formats in file or folder names [youtube-xxx], [YouTube-xxx], [Youtube-xxx ] and [xxxxxxxx]
+
+Movie Library Fields supported:
 - title
 - summary
 - poster
@@ -24,3 +28,12 @@ Fields:
 - genres (many? to test)
 - directors (1)
 
+Forked initially from paulds8 and sander1's 'YouTube-Agent.bundle':
+
+sander1 did the initial movie only agent using a given youtube video id
+https://github.com/sander1/YouTube-Agent.bundle
+https://forums.plex.tv/discussion/83106/rel-youtube-metadata-agent
+
+paulds8 did the initial title search fork i had to fix
+https://github.com/paulds8/YouTube-Agent.bundle/tree/namematch
+https://forums.plex.tv/discussion/300800/youtube-agent-matching-on-name
