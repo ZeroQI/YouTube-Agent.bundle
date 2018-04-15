@@ -37,3 +37,5 @@ https://forums.plex.tv/discussion/83106/rel-youtube-metadata-agent
 paulds8 did the initial title search fork i had to fix
 https://github.com/paulds8/YouTube-Agent.bundle/tree/namematch
 https://forums.plex.tv/discussion/300800/youtube-agent-matching-on-name
+
+Donation link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=S8CUKCX4CWBBG&lc=IE&item_name=Plex%20movies%20and%20TV%20series%20Youtube%20Agent&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted
