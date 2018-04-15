@@ -2,7 +2,7 @@
 
 
 YouTube IDs
-- Playlist id: PL and 16 hexadecimal characters 0-9 and A-F
+- Playlist id: PL and 16 hexadecimal characters 0-9 and A-F or 32 chars 0-9 a-Z
 - Video id: 11 chars long 0-9 and a-z, can have also'_-'
 
 Naming convention for Movie/Home Video library:
