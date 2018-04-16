@@ -13,7 +13,7 @@ YOUTUBE_PLAYLIST_DETAILS = 'https://www.googleapis.com/youtube/v3/playlists?part
 YOUTUBE_PLAYLIST_ITEMS   = 'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=50&playlistId=%s&key=%s'
 YOUTUBE_API_KEY          = 'AIzaSyC2q8yjciNdlYRNdvwbb7NEcDxBkv1Cass'
 YOUTUBE_REGEX_VIDEO      = Regex('\\[(youtube-)?(?P<id>[a-z0-9\-_]{11})\\]', Regex.IGNORECASE)
-YOUTUBE_REGEX_PLAYLIST   = Regex('\\[(youtube-)?(?P<id>PL[a-z0-9]{16,32})\\]?',  Regex.IGNORECASE)  #.*\[([Yy]ou[Tt]ube-)?PL[a-z0-9\-_]{11}
+YOUTUBE_REGEX_PLAYLIST   = Regex('\\[(youtube-)?(?P<id>PL([a-z0-9]{16}|[a-z0-9\-_]{32}))\\]',  Regex.IGNORECASE)  #.*\[([Yy]ou[Tt]ube-)?PL[a-z0-9\-_]{11}
 YOUTUBE_CATEGORY_ID      = {  '1': 'Film & Animation'     ,  '2': 'Autos & Vehicles'     , '10': 'Music'                , '15': 'Pets & Animals',
                              '17': 'Sports',                '18': 'Short Movies',          '19': 'Travel & Events',       '20': 'Gaming',
                              '21': 'Videoblogging',         '22': 'People & Blogs',        '23': 'Comedy',                '24': 'Entertainment',
@@ -65,14 +65,26 @@ def Search(results, media, lang, manual, movie):
   except Exception as e:  guid = None;  Log('search() - filename: "{}" Regex failed to find YouTube id: "{}", error: "{}"'.format(filename, regex, e))
   if guid:
     Log('search() - filename: "{}", found youtube ID: "{}"'.format(filename, guid))
-    results.Append( MetadataSearchResult( id=guid,  name=filename, year=None, score=100, lang=lang ) )
+    results.Append( MetadataSearchResult( id='youtube-'+guid,  name=filename, year=None, score=100, lang=lang ) )
   else:
+    if not movie: 
+      s = media.seasons.keys()[0] if media.seasons.keys()[0]!='0' else media.seasons.keys()[1] if len(media.seasons.keys()) >1 else None
+      if s:
+        e          = media.seasons[s].episodes.keys()[0]
+        dir        = os.path.dirname(media.seasons[s].episodes[e].items[0].parts[0].file)
+        Log(dir)
+        Log(os.path.basename(dir))
+        if YOUTUBE_REGEX_PLAYLIST.search(os.path.basename(dir)) or os.path.exists(os.path.join(dir, 'youtube.id')):
+          Log('search() - filename: "{}", found season YouTube playlist id'.format(filename))
+          results.Append( MetadataSearchResult( id=filename, name=filename, year=None, score=100, lang=lang ) )
+          Log(''.ljust(157, '='))
+          return
     try:
       json_obj = JSON.ObjectFromURL(YOUTUBE_VIDEO_SEARCH % (String.Quote(filename, usePlus=False), YOUTUBE_API_KEY))  #Prefs['yt_apikey']
       if json_obj['pageInfo']['totalResults']:
         if filename == json_obj['items'][0]['snippet']['title']:   
           Log('search() - filename: "{}", found exact matching YouTube title: "{}", description: "{}"'.format(filename, json_obj['items'][0]['snippet']['description']))
-          results.Append( MetadataSearchResult( id=json_obj['items'][0]['id']['videoId'], name=filename, year=None, score=100, lang=lang ) )
+          results.Append( MetadataSearchResult( id='youtube-'+json_obj['items'][0]['id']['videoId'], name=filename, year=None, score=100, lang=lang ) )
         else:  Log('search() - no id in title nor matching YouTube title: "{}", closest match: "{}", description: "{}"'.format(filename, json_obj['items'][0]['snippet']['title'], json_obj['items'][0]['snippet']['description']))
       elif 'error' in json_obj:  Log('search() - code: "{}", message: "{}"'.format(json_obj['error']['code'], json_obj['error']['message']))
     except Exception as e:  Log('search() - Could not retrieve data from YouTube for: "{}", Exception: "{}"'.format(filename, e))
@@ -82,10 +94,12 @@ Log(''.ljust(157, '='))
 def Update(metadata, media, lang, force, movie):
   Log(''.ljust(157, '='))
   Log('update() - metadata,id: "{}"'.format(metadata.id))
-  guid = metadata.id.replace("youtube-", "")
+  guid = metadata.id.replace("youtube-", "") if metadata.id.startswith('youtube-') else ''
   
-  try:     json_obj = JSON.ObjectFromURL(YOUTUBE_VIDEO_DETAILS % (metadata.id, YOUTUBE_API_KEY))['items'][0]
-  except:  json_obj = None;  Log('update() - Could not retrieve data from YouTube for: %s' % metadata.id)
+  json_obj = None
+  if guid:
+    try:     json_obj = JSON.ObjectFromURL(YOUTUBE_VIDEO_DETAILS % (metadata.id, YOUTUBE_API_KEY))['items'][0]
+    except:  Log('update() - Could not retrieve data from YouTube for: %s' % metadata.id)
   
   if json_obj:
     Log('update() - Loaded video details from: "{}"'.format(YOUTUBE_VIDEO_DETAILS % (metadata.id, YOUTUBE_API_KEY)))
@@ -116,8 +130,13 @@ def Update(metadata, media, lang, force, movie):
           #https://www.googleapis.com/youtube/v3/channels?part=brandingSettings&id={CHANNEL_ID}&key={YOUTUBE_API_KEY}
           Log('director: '+json_obj['snippet']['channelTitle'])
         except:  pass
+  
   if not movie:  #TV series Library
-    if guid.startswith('PL'):
+    
+    # Building season map to playlist id
+    season_map={}
+    if guid:  # Youtube ID given on Series so single season playlist
+      season_map ['1'] = guid
       try:     json_obj = JSON.ObjectFromURL(YOUTUBE_PLAYLIST_DETAILS % (guid, YOUTUBE_API_KEY))['items'][0]  #Choosen per id hence one single result
       except:  json_obj = None;  Log('update() - Could not retrieve data from YouTube for: %s' % metadata.id)
       if json_obj:
@@ -130,9 +149,36 @@ def Update(metadata, media, lang, force, movie):
         #metadata.rating                  = float(10*int(json_obj['statistics']['likeCount'])/(int(json_obj['statistics']['dislikeCount'])+int(json_obj['statistics']['likeCount'])));  Log('rating: {}'.format(metadata.rating))
         #metadata.genres                  = [ YOUTUBE_CATEGORY_ID[id] for id in json_obj['snippet']['categoryId'].split(',') ];  Log('genres: '+str([x for x in metadata.genres]))
 
-      ### Seasons ###
-      #metadata.season['1'].posters [thumb_link] = Proxy.Preview(HTTP.Request( json_obj['snippet']['thumbnails']['standard']['url'] ).content, sort_order=1)
+    else:  #Season playlist mode
+      metadata.title = metadata.id
+      for season in sorted(media.seasons, key=natural_sort_key):
+        for episode in sorted(media.seasons[season].episodes, key=natural_sort_key):
+          full_dir = os.path.dirname(media.seasons[season].episodes[episode].items[0].parts[0].file)
+          dir      = os.path.basename(full_dir)
+          result = YOUTUBE_REGEX_PLAYLIST.search(dir)
+          if result: season_map [season] = result.group('id')
+          elif os.path.isfile(os.path.join(dir, 'youtube.id')):
+            with open(os.path.join(full_dir, 'youtube.id'), 'r') as guid_file:
+              season_map [season] = guid_file.read().strip()
+              Log.info('Forced ID file: "youtube.id" for season {:>2} with id "{}" in seasons folder'.format(season, season_map[season]))
+          break
+    
+    ### Seasons loop ###
+    for season in season_map:
+      guid = season_map [season]
+      if not guid.startswith('PL'):  continue
       
+      ### Seasons ###
+      try:     json_obj = JSON.ObjectFromURL(YOUTUBE_PLAYLIST_DETAILS % (guid, YOUTUBE_API_KEY))['items'][0]  #Choosen per id hence one single result
+      except:  json_obj = None;  Log('update() - Could not retrieve data from YouTube for: %s' % metadata.id)
+      if json_obj:
+        #Log('update() - json obj: {}'.format(json_obj))
+        Log('update() - series - Season {} summary: '.format(season, json_obj['snippet']['description'].replace('\n', '. ')))
+        metadata.seasons[season].summary                                                      = json_obj['snippet']['description']
+        metadata.seasons[season].posters[json_obj['snippet']['thumbnails']['standard']['url']] = Proxy.Preview(HTTP.Request( json_obj['snippet']['thumbnails']['standard']['url'] ).content, sort_order=1)
+        #metadata.seasons[season].art
+        #channelTitle = json_obj['snippet']['channelTitle']
+        
       ### Episodes ###
       try:     json_obj = JSON.ObjectFromURL(YOUTUBE_PLAYLIST_ITEMS % (guid, YOUTUBE_API_KEY))
       except:  json_obj = None;  Log('update() - Could not retrieve data from YouTube for: %s' % metadata.id)
@@ -146,22 +192,27 @@ def Update(metadata, media, lang, force, movie):
         for video in playlist:
           rank=rank+1
           if '1' not in media.seasons or str(rank) not in media.seasons['1'].episodes:  Log('episode not present: '+str(rank));  continue
-          episode = metadata.seasons['1'].episodes[str(rank)]
+          episode = metadata.seasons[season].episodes[str(rank)]
+         
           Log('update() - Episode: {:>3} videoId: https://www.youtube.com/watch?v={}'.format(rank, video['contentDetails']['videoId']))
           #episode.originally_available_at = Datetime.ParseDate(video['contentDetails']['videoPublishedAt']).date();  Log('update() - publishedAt:      '+video['contentDetails']['videoPublishedAt'])
-          episode.originally_available_at = Datetime.ParseDate(video['snippet']['publishedAt']).date();  Log('update() - publishedAt:      '+video['snippet'       ]['publishedAt'])
+          episode.originally_available_at = Datetime.ParseDate(video['snippet']['publishedAt']).date();  Log('update() - publishedAt: '+video['snippet'       ]['publishedAt'])
           episode.title                   = video['snippet'       ]['title'      ];  Log('update() - title:       '.format(video['snippet'       ]['title'      ]))
-          episode.summary                 = video['snippet'       ]['description'];  Log('update() - summary:     '+video['snippet'       ]['description'].replace('\n', '. '))
-          episode.thumbs [ video['snippet']['thumbnails' ]['default' ]['url'] ] = Proxy.Preview(video['snippet']['thumbnails' ]['standard']['url'], sort_order=1) 
+          episode.summary                 = video['snippet'       ]['description'];  Log('update() - summary:     '.format(video['snippet'       ]['description'].replace('\n', '. ')))
+          episode.thumbs [ video['snippet']['thumbnails' ]['standard' ]['url'] ] = Proxy.Preview(video['snippet']['thumbnails' ]['standard']['url'], sort_order=1) 
           Log('update() - summary:     '+video['snippet']['thumbnails' ]['default' ]['url'])
           Log('update() - summary:     '+video['snippet']['thumbnails' ]['standard' ]['url'])
-          #Log('update() - thumbnails1:      '+video['snippet'       ]['thumbnails' ]['default' ]['url'])
-          #Log('update() - thumbnails2:      '+video['snippet'       ]['thumbnails' ]['standard']['url'])
           
-      #for season in sorted(media.seasons, key=natural_sort_key):
-      #  for episode in sorted(media.seasons[season].episodes, key=natural_sort_key):
-      #    Log.Info("metadata.seasons[{:>2}].episodes[{:>3}]".format(season, episode))
-        
+          if Prefs['add_user_as_director']:
+            episode.directors.clear()
+            try:
+              meta_director       = metadata.directors.new()
+              meta_director.name  = json_obj['snippet']['channelTitle'];  Log('director: '+json_obj['snippet']['channelTitle'])
+              #meta_director.photo = json_obj['video_main_content']['contents'][0]['thumbnail'        ]['url' ].replace('/s88-', '/s512-')
+              #https://www.googleapis.com/youtube/v3/channels?part=snippet&id='+commaSeperatedList+'&fields=items(id%2Csnippet%2Fthumbnails)
+              #https://www.googleapis.com/youtube/v3/channels?part=brandingSettings&id={CHANNEL_ID}&key={YOUTUBE_API_KEY}
+            except:  pass
+          
   Log(''.ljust(157, '='))
 
 ### Agent declaration ##################################################################################################################################################
