@@ -1,6 +1,5 @@
 # YouTube-Agent.bundle Plex Movie & TV Series library agent 
 
-Please use the Absolute Series Scanner to scan your media and leave the YouTube id in the series/movie title
 
 YouTube IDs
 - Playlist id: PL and 16 hexadecimal characters 0-9 and A-F or 32 chars 0-9 a-Z
