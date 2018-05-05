@@ -211,7 +211,7 @@ def Update(metadata, media, lang, force, movie):
           metadata.seasons[season].title          = title;                                Log('[ ] title:     {}'.format(title))
           metadata.seasons[season].summary        = summary;                              Log('[ ] summary:   {}'.format(summary.replace('\n', '. ')))
           metadata.seasons[season].posters[thumb] = Proxy.Preview(poster, sort_order=1);  Log('[ ] thumbnail: {}'.format(thumb))
-          for rank in playlist:
+          for rank in sorted(playlist, key=natural_sort_key):
             episode = metadata.seasons[season].episodes[rank]
             video   = playlist[rank]
             videoId = Dict(video, 'contentDetails', 'videoId')
@@ -219,10 +219,10 @@ def Update(metadata, media, lang, force, movie):
             Log.Info("".ljust(157, '-'))
             Log('Seasons[{:>2}].episodes[{:>3}] https://www.youtube.com/watch?v={}'.format(season, rank, videoId))
             #episode.originally_available_at = Datetime.ParseDate(video['contentDetails']['videoPublishedAt']).date();  Log('update() - publishedAt:      '+video['contentDetails']['videoPublishedAt'])
-            episode.title                            = video['snippet']['title'      ];  Log('[ ] title:       {}'.format(video['snippet'       ]['title'      ]))
-            episode.summary                          = video['snippet']['description'];  Log('[ ] summary:     {}'.format(video['snippet'       ]['description'].replace('\n', '. ')))
-            episode.originally_available_at          = Datetime.ParseDate(video['snippet']['publishedAt']).date();  Log('[ ] publishedAt: '+video['snippet'       ]['publishedAt'])
-            episode.thumbs[playlist_thumbs[rank][0]] = Proxy.Preview(playlist_thumbs[rank][1], sort_order=1) 
+            episode.title                            = video['snippet']['title'      ];                             Log('[ ] title:       {}'.format(video['snippet'       ]['title'      ]))
+            episode.summary                          = video['snippet']['description'];                             Log('[ ] summary:     {}'.format(video['snippet'       ]['description'].replace('\n', '. ').replace('\r', '. ')))
+            episode.originally_available_at          = Datetime.ParseDate(video['snippet']['publishedAt']).date();  Log('[ ] publishedAt: {}'.format(video['snippet'       ]['publishedAt']))
+            episode.thumbs[playlist_thumbs[rank][0]] = Proxy.Preview(playlist_thumbs[rank][1], sort_order=1);       Log('[ ] thumbnail:   {}'.format(playlist_thumbs[rank][0]))
             
             if Dict(playlist_details, rank):
               #Log.Info('playlist_details: {}'.format(playlist_details[rank]))
@@ -238,7 +238,7 @@ def Update(metadata, media, lang, force, movie):
                 #meta_director.photo = json_obj['video_main_content']['contents'][0]['thumbnail'        ]['url' ].replace('/s88-', '/s512-')
               for id  in Dict(playlist_details, rank, 'snippet', 'categoryId').split(',') or []:  genre_array[YOUTUBE_CATEGORY_ID[id]] = genre_array[YOUTUBE_CATEGORY_ID[id]]+1 if YOUTUBE_CATEGORY_ID[id] in genre_array else 1
               for tag in Dict(playlist_details, rank, 'snippet', 'tags')                  or []:  genre_array[tag                    ] = genre_array[tag                    ]+1 if tag                     in genre_array else 1
-              Log.Info('[ ] genre_array: {}'.format(genre_array))
+              #Log.Info('[ ] genre_array: {}'.format(genre_array))
               
           genre_list = [id for id in genre_array if genre_array[id]>len(playlist)/2 and id not in metadata.genres]
           #Log.Info('[ ] genre_list: {}'.format(genre_list))
