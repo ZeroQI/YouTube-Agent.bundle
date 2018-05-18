@@ -157,8 +157,8 @@ def Update(metadata, media, lang, force, movie):
           metadata.summary = summary; Log('[ ] summary:     '+summary.replace('\n', '. '))  #
           metadata.roles.clear()
           role       = metadata.roles.new()
-          role.role  = Dict(json_obj,'snippet','channelTitle')
-          role.name  = Dict(json_obj,'snippet','channelTitle')
+          role.role  = Dict(json_obj, 'snippet', 'channelTitle')
+          role.name  = Dict(json_obj, 'snippet', 'channelTitle')
           role.photo = Dict(json_obj2,'snippet', 'thumbnails', 'medium', 'url')  
           Log.Info('[ ] role: {}'.format(Dict(json_obj,'snippet','channelTitle')))
           if Dict(json_obj,'snippet','country') and Dict(json_obj,'snippet','country') not in metadata.countries:  metadata.countries.add(Dict(json_obj,'snippet','country'));  Log.Info('[ ] country: {}'.format(Dict(json_obj,'snippet','country') ))
@@ -239,10 +239,9 @@ def Update(metadata, media, lang, force, movie):
               episode.rating   = float(10*int(playlist_details[rank]['statistics']['likeCount'])/(int(playlist_details[rank]['statistics']['dislikeCount'])+int(playlist_details[rank]['statistics']['likeCount'])))
               Log('[ ] rating:      {}'.format(episode.rating))
               Log.Info('[ ] director:    {}'.format(Dict(playlist_details, rank, 'snippet',  'channelTitle')))
-              if Dict(playlist_details, rank, 'snippet',  'channelTitle') and Dict(playlist_details, rank, 'snippet',  'channelTitle') not in episode.directors:
+              if Dict(playlist_details, rank, 'snippet',  'channelTitle') and Dict(playlist_details, rank, 'snippet',  'channelTitle') not in [role_obj.name for role_obj in episode.directors]:
                 meta_director       = episode.directors.new()
                 meta_director.name  = Dict(playlist_details, rank, 'snippet',  'channelTitle')
-                #meta_director.photo = json_obj['video_main_content']['contents'][0]['thumbnail'        ]['url' ].replace('/s88-', '/s512-')
               for id  in Dict(playlist_details, rank, 'snippet', 'categoryId').split(',') or []:  genre_array[YOUTUBE_CATEGORY_ID[id]] = genre_array[YOUTUBE_CATEGORY_ID[id]]+1 if YOUTUBE_CATEGORY_ID[id] in genre_array else 1
               for tag in Dict(playlist_details, rank, 'snippet', 'tags')                  or []:  genre_array[tag                    ] = genre_array[tag                    ]+1 if tag                     in genre_array else 1
             
