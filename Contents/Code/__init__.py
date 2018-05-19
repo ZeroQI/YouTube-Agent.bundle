@@ -4,8 +4,10 @@
 # - series agent code
 
 ### Imports ###
-import os
-import re
+import os                     # path.abspath, join, dirname
+import re                     #
+import inspect                # getfile, currentframe
+from io     import open       #
 
 YOUTUBE_VIDEO_SEARCH     = 'https://content.googleapis.com/youtube/v3/search?q=%s&maxResults=1&part=snippet&key=%s'
 YOUTUBE_VIDEO_DETAILS    = 'https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=%s&key=%s'
@@ -43,6 +45,29 @@ def ISO8601DurationToSeconds(duration):
   def js_int(value):  return int(''.join([x for x in list(value or '0') if x.isdigit()]))  # js-like parseInt - https://gist.github.com/douglasmiranda/2174255
   match = re.match('PT(\d+H)?(\d+M)?(\d+S)?', duration).groups()
   return 3600 * js_int(match[0]) + 60 * js_int(match[1]) + js_int(match[2])
+
+### Get media directory ###
+def GetMediaDir (media, movie):
+  if movie:  return os.path.dirname(media.items[0].parts[0].file)
+  else:
+    for s in media.seasons if media else []: # TV_Show:
+      for e in media.seasons[s].episodes:
+        return os.path.dirname(media.seasons[s].episodes[e].items[0].parts[0].file)
+
+### Get media root folder ###
+def GetLibraryRootPath(dir):
+  library, root, path = '', '', ''
+  for root in [os.sep.join(dir.split(os.sep)[0:x+2]) for x in range(0, dir.count(os.sep))]:
+    if root in PLEX_LIBRARY:  library, path = PLEX_LIBRARY[root], os.path.relpath(dir, root); break
+  else:  #401 no right to list libraries (windows)
+    filename = os.path.join(CachePath, '_Logs', '_root_.scanner.log')
+    if os.path.isfile(filename):
+      with open(filename, 'r') as file:  line=file.read()
+      for root in [os.sep.join(dir.split(os.sep)[0:x+2]) for x in range(dir.count(os.sep)-1, -1, -1)]:
+        if "root: '{}'".format(root) in line:   library, path = '', os.path.relpath(dir, root).rstrip('.'); break
+      else:  library, path, root = '', '_unknown_folder', '';  Log.Debug("root not found")
+    Log.Debug("GetLibraryRootPath() - library: '{}', path: '{}', root: '{}', dir:'{}', PLEX_LIBRARY: '{}'".format(library, path, root, dir, str(PLEX_LIBRARY)))
+  return library, root, path
   
 def Start():
   HTTP.CacheTime                  = CACHE_1MONTH
@@ -114,7 +139,7 @@ def Update(metadata, media, lang, force, movie):
         metadata.summary                 = json_obj['snippet']['description'];                                     Log('series description: '+json_obj['snippet']['description'].replace('\n', '. '))
         thumb                            = json_obj['snippet']['thumbnails']['default']['url'];                    Log('thumb: "{}"'.format(thumb))
         poster                           = json_obj['snippet']['thumbnails']['standard']['url'];                   Log('poster: "{}"'.format(thumb))
-        metadata.posters[thumb]          = Proxy.Preview(HTTP.Request(poster).content, sort_order=1)
+        metadata.posters[thumb]          = Proxy.Media(HTTP.Request(poster).content, sort_order=1)
         metadata.duration                = ISO8601DurationToSeconds(json_obj['contentDetails']['duration'])*1000;  Log('series duration:    "{}"->"{}"'.format(json_obj['contentDetails']['duration'], metadata.duration))
         metadata.rating                  = float(10*int(json_obj['statistics']['likeCount'])/(int(json_obj['statistics']['dislikeCount'])+int(json_obj['statistics']['likeCount'])));  Log('rating: {}'.format(metadata.rating))
         metadata.genres                  = [ YOUTUBE_CATEGORY_ID[id] for id in json_obj['snippet']['categoryId'].split(',') ];  Log('genres: '+str([x for x in metadata.genres]))
@@ -135,6 +160,38 @@ def Update(metadata, media, lang, force, movie):
   ### TV series Library ###
   else: 
     
+    ### Collection tag for grouping folders ###
+    Local_dict          = {}
+    dir                 = GetMediaDir(media, movie)
+    library, root, path = GetLibraryRootPath(dir)
+    if not path in ('_unknown_folder', '.'):
+    
+      series_root_folder  = os.path.join(root, path.split(os.sep, 1)[0])
+      subfolder_count     = len([file for file in os.listdir(series_root_folder) if os.path.isdir(os.path.join(series_root_folder, file))])
+      Log.Info('dir: {}, library:{}, root:{}, path:{}'.format(dir, library, root, path))
+      Log.Info('series_root_folder: {}, subfolder_count: {}'.format(series_root_folder, subfolder_count))
+      
+      ### Extract season and transparent folder to reduce complexity and use folder as serie name ###
+      reverse_path, season_folder_first = list(reversed(path.split(os.sep))), False
+      SEASON_RX = [ 'Specials',                                                                                                                                           # Specials (season 0)
+                    '(Season|Series|Book|Saison|Livre|S)[ _\-]*(?P<season>[0-9]{1,2}).*',                                                                                 # Season ##, Series #Book ## Saison ##, Livre ##, S##, S ##
+                    '(?P<show>.*?)[\._\- ]+[sS](?P<season>[0-9]{2})',                                                                                                     # (title) S01
+                    '(?P<season>[0-9]{1,2})a? Stagione.*',                                                                                                                # ##a Stagione
+                    '(?P<season>[0-9]{1,2}).*',	                                                                                                                          # ##
+                    '^.*([Ss]aga]|([Ss]tory )?[Aa][Rr][KkCc]).*$'                                                                                                         # Last entry in array, folder name droped but files kept: Story, Arc, Ark, Video
+                  ]                                                                                                                                                       #
+      for folder in reverse_path[:-1]:                 # remove root folder from test, [:-1] Doesn't thow errors but gives an empty list if items don't exist, might not be what you want in other cases
+        for rx in SEASON_RX :                          # in anime, more specials folders than season folders, so doing it first
+          if re.match(rx, folder, re.IGNORECASE):      # get season number but Skip last entry in seasons (skipped folders)
+            reverse_path.remove(folder)                # Since iterating slice [:] or [:-1] doesn't hinder iteration. All ways to remove: reverse_path.pop(-1), reverse_path.remove(thing|array[0])
+            if rx!=SEASON_RX[-1] and len(reverse_path)>=2 and folder==reverse_path[-2]:  season_folder_first = True
+            break
+     
+      if len(reverse_path)>1 and not season_folder_first and subfolder_count>1:  ### grouping folders only ###
+        Log.Info("Grouping folder found, root: {}, path: {}, Grouping folder: {}, subdirs: {}, reverse_path: {}".format(root, path, os.path.basename(series_root_folder), subfolder_count, reverse_path))
+        if reverse_path[-1] not in metadata.collections:  metadata.collections=[reverse_path[-1]]
+      else:  Log.Info("Grouping folder not found, root: {}, path: {}, Grouping folder: {}, subdirs: {}, reverse_path: {}".format(root, path, os.path.basename(series_root_folder), subfolder_count, reverse_path))
+    
     # Building season map to playlist id
     if guid:  # Youtube ID given on Series so single season playlist
       season_map ['1'] = guid
@@ -143,8 +200,8 @@ def Update(metadata, media, lang, force, movie):
       else:
         
         ### Series info if PL id in series folder name
-        image = HTTP.Request( json_obj['snippet']['thumbnails']['standard']['url'] ).content
-        metadata.posters[json_obj['snippet']['thumbnails']['standard']['url']] = Proxy.Preview(image, sort_order=1)
+        thumb = Dict(json_obj, 'snippet', 'thumbnails', 'standard', 'url') or Dict(json_obj, 'snippet', 'thumbnails', 'high', 'url') or Dict(json_obj, 'snippet', 'thumbnails', 'medium', 'url') or Dict(json_obj, 'snippet', 'thumbnails', 'default', 'url')
+        metadata.posters[thumb] = Proxy.Media(HTTP.Request( thumb ).content, sort_order=1)
         metadata.title                   =                    json_obj['snippet']['title'      ].rstrip(' Playlist');  Log('[ ] title:       '+ json_obj['snippet']['title'])
         metadata.originally_available_at = Datetime.ParseDate(json_obj['snippet']['publishedAt']).date();              Log('[ ] publishedAt: '+ json_obj['snippet']['publishedAt'])
         metadata.studio                  = 'YouTube';                                                                  Log('[ ] studio:      YouTube')
@@ -212,14 +269,14 @@ def Update(metadata, media, lang, force, movie):
               except Exception as e:  Log('exception: {}, url: {}'.format(e, guid))
               else:
                 link = Dict(video, 'snippet', 'thumbnails', 'standard', 'url') or Dict(video, 'snippet', 'thumbnails', 'high', 'url') or Dict(video, 'snippet', 'thumbnails', 'medium', 'url') or Dict(video, 'snippet', 'thumbnails', 'default', 'url')
-                playlist_thumbs[str(rank)] = (link, Proxy.Preview(HTTP.Request(link).content)) 
+                playlist_thumbs[str(rank)] = (link, Proxy.Media(HTTP.Request(link).content)) 
             
           # Loop through list
           Log.Info("".ljust(157, '='))
           Log.Info('Season: {:>2} - totalResults:   {}, resultsPerPage: {}, Json: {}'.format(season, json_obj['pageInfo']['totalResults'], json_obj['pageInfo']['resultsPerPage'], YOUTUBE_PLAYLIST_DETAILS % (guid, YOUTUBE_API_KEY)))
           metadata.seasons[season].title          = title;                                Log('[ ] title:     {}'.format(title))
           metadata.seasons[season].summary        = summary;                              Log('[ ] summary:   {}'.format(summary.replace('\n', '. ')))
-          metadata.seasons[season].posters[thumb] = Proxy.Preview(poster, sort_order=1);  Log('[ ] thumbnail: {}'.format(thumb))
+          metadata.seasons[season].posters[thumb] = Proxy.Media(poster, sort_order=1);  Log('[ ] thumbnail: {}'.format(thumb))
           for rank in sorted(playlist, key=natural_sort_key):
             episode = metadata.seasons[season].episodes[rank]
             video   = playlist[rank]
@@ -231,7 +288,7 @@ def Update(metadata, media, lang, force, movie):
             episode.title                            = video['snippet']['title'      ];                             Log('[ ] title:       {}'.format(video['snippet'       ]['title'      ]))
             episode.summary                          = video['snippet']['description'];                             Log('[ ] summary:     {}'.format(video['snippet'       ]['description'].replace('\n', '. ').replace('\r', '. ')))
             episode.originally_available_at          = Datetime.ParseDate(video['snippet']['publishedAt']).date();  Log('[ ] publishedAt: {}'.format(video['snippet'       ]['publishedAt']))
-            episode.thumbs[playlist_thumbs[rank][0]] = Proxy.Preview(playlist_thumbs[rank][1], sort_order=1);       Log('[ ] thumbnail:   {}'.format(playlist_thumbs[rank][0]))
+            episode.thumbs[playlist_thumbs[rank][0]] = Proxy.Media(playlist_thumbs[rank][1], sort_order=1);       Log('[ ] thumbnail:   {}'.format(playlist_thumbs[rank][0]))
             
             if Dict(playlist_details, rank):
               episode.duration = ISO8601DurationToSeconds(playlist_details[rank]['contentDetails']['duration'])*1000
@@ -263,3 +320,25 @@ class YouTubeMovieAgentAgent(Agent.Movies):
   name, primary_provider, fallback_agent, contributes_to, accepts_from, languages = 'YouTube', True, None, None, ['com.plexapp.agents.localmedia'], [Locale.Language.NoLanguage]
   def search (self, results,  media, lang, manual):  Search (results,  media, lang, manual, True)
   def update (self, metadata, media, lang, force ):  Update (metadata, media, lang, force,  True)
+
+### Variables ###
+PlexRoot          = os.path.abspath(os.path.join(os.path.dirname(inspect.getfile(inspect.currentframe())), "..", "..", "..", ".."))
+CachePath         = os.path.join(PlexRoot, "Plug-in Support", "Data", "com.plexapp.agents.hama", "DataItems")
+
+### Plex Library XML ###
+PLEX_LIBRARY, PLEX_LIBRARY_URL = {}, "http://127.0.0.1:32400/library/sections/"    # Allow to get the library name to get a log per library https://support.plex.tv/hc/en-us/articles/204059436-Finding-your-account-token-X-Plex-Token
+Log.Info("Library: "+PlexRoot)  #Log.Info(file)
+if os.path.isfile(os.path.join(PlexRoot, "X-Plex-Token.id")):
+  Log.Info("'X-Plex-Token.id' file present")
+  token_file=Data.Load(os.path.join(PlexRoot, "X-Plex-Token.id"))
+  if token_file:
+    PLEX_LIBRARY_URL += "?X-Plex-Token=" + token_file.strip()
+    #Log.Info(PLEX_LIBRARY_URL) ##security risk if posting logs with token displayed
+try:
+  library_xml = etree.fromstring(urllib2.urlopen(PLEX_LIBRARY_URL).read())
+  for library in library_xml.iterchildren('Directory'):
+    for path in library.iterchildren('Location'):
+      PLEX_LIBRARY[path.get("path")] = library.get("title")
+      Log.Info( path.get("path") + " = " + library.get("title") )
+except Exception as e:  Log.Info("Place correct Plex token in X-Plex-Token.id file in logs folder or in PLEX_LIBRARY_URL variable to have a log per library - https://support.plex.tv/hc/en-us/articles/204059436-Finding-your-account-token-X-Plex-Token" + str(e))
+ 
