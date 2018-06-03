@@ -46,27 +46,36 @@ def ISO8601DurationToSeconds(duration):
   match = re.match('PT(\d+H)?(\d+M)?(\d+S)?', duration).groups()
   return 3600 * js_int(match[0]) + 60 * js_int(match[1]) + js_int(match[2])
 
-### Get media directory ###
-def GetMediaDir (media, movie):
+  ### Get media directory ###
+def GetMediaDir (media, movie, file=False):
   if movie:  return os.path.dirname(media.items[0].parts[0].file)
   else:
     for s in media.seasons if media else []: # TV_Show:
       for e in media.seasons[s].episodes:
-        return os.path.dirname(media.seasons[s].episodes[e].items[0].parts[0].file)
+        Log.Info(media.seasons[s].episodes[e].items[0].parts[0].file)
+        return media.seasons[s].episodes[e].items[0].parts[0].file if file else os.path.dirname(media.seasons[s].episodes[e].items[0].parts[0].file)
 
 ### Get media root folder ###
 def GetLibraryRootPath(dir):
   library, root, path = '', '', ''
   for root in [os.sep.join(dir.split(os.sep)[0:x+2]) for x in range(0, dir.count(os.sep))]:
-    if root in PLEX_LIBRARY:  library, path = PLEX_LIBRARY[root], os.path.relpath(dir, root); break
+    if root in PLEX_LIBRARY:
+      library = PLEX_LIBRARY[root]
+      path    = os.path.relpath(dir, root)
+      break
   else:  #401 no right to list libraries (windows)
+    Log.Info('[!] Library access denied')
     filename = os.path.join(CachePath, '_Logs', '_root_.scanner.log')
     if os.path.isfile(filename):
+      Log.Info('[!] ASS root scanner file present: "{}"'.format(filename))
       with open(filename, 'r') as file:  line=file.read()
       for root in [os.sep.join(dir.split(os.sep)[0:x+2]) for x in range(dir.count(os.sep)-1, -1, -1)]:
-        if "root: '{}'".format(root) in line:   library, path = '', os.path.relpath(dir, root).rstrip('.'); break
-      else:  library, path, root = '', '_unknown_folder', '';  Log.Debug("root not found")
-    Log.Debug("GetLibraryRootPath() - library: '{}', path: '{}', root: '{}', dir:'{}', PLEX_LIBRARY: '{}'".format(library, path, root, dir, str(PLEX_LIBRARY)))
+        if "root: '{}'".format(root) in line:
+          path = os.path.relpath(dir, root).rstrip('.')
+          break
+        Log.Info('[!] root not found: "{}"'.format(root))
+      else: path, root = '_unknown_folder', '';  
+    else:  Log.Info('[!] ASS root scanner file missing: "{}"'.format(filename))
   return library, root, path
   
 def Start():
@@ -164,12 +173,16 @@ def Update(metadata, media, lang, force, movie):
     Local_dict          = {}
     dir                 = GetMediaDir(media, movie)
     library, root, path = GetLibraryRootPath(dir)
+    Log.Info('[ ] dir:        "{}"'.format(dir    ))
+    Log.Info('[ ] library:    "{}"'.format(library))
+    Log.Info('[ ] root:       "{}"'.format(root   ))
+    Log.Info('[ ] path:       "{}"'.format(path   ))
     if not path in ('_unknown_folder', '.'):
     
       series_root_folder  = os.path.join(root, path.split(os.sep, 1)[0])
       subfolder_count     = len([file for file in os.listdir(series_root_folder) if os.path.isdir(os.path.join(series_root_folder, file))])
-      Log.Info('dir: {}, library:{}, root:{}, path:{}'.format(dir, library, root, path))
-      Log.Info('series_root_folder: {}, subfolder_count: {}'.format(series_root_folder, subfolder_count))
+      Log.Info('[ ] series_root_folder: "{}"'.format(series_root_folder))
+      Log.Info('[ ] subfolder_count:    "{}"'.format(subfolder_count   ))
       
       ### Extract season and transparent folder to reduce complexity and use folder as serie name ###
       reverse_path, season_folder_first = list(reversed(path.split(os.sep))), False
@@ -189,7 +202,9 @@ def Update(metadata, media, lang, force, movie):
      
       if len(reverse_path)>1 and not season_folder_first and subfolder_count>1:  ### grouping folders only ###
         Log.Info("Grouping folder found, root: {}, path: {}, Grouping folder: {}, subdirs: {}, reverse_path: {}".format(root, path, os.path.basename(series_root_folder), subfolder_count, reverse_path))
+        Log.Info('[ ] collections:        "{}"'.format(reverse_path[-1]))
         if reverse_path[-1] not in metadata.collections:  metadata.collections=[reverse_path[-1]]
+          
       else:  Log.Info("Grouping folder not found, root: {}, path: {}, Grouping folder: {}, subdirs: {}, reverse_path: {}".format(root, path, os.path.basename(series_root_folder), subfolder_count, reverse_path))
     
     # Building season map to playlist id
@@ -202,7 +217,7 @@ def Update(metadata, media, lang, force, movie):
         ### Series info if PL id in series folder name
         thumb = Dict(json_obj, 'snippet', 'thumbnails', 'standard', 'url') or Dict(json_obj, 'snippet', 'thumbnails', 'high', 'url') or Dict(json_obj, 'snippet', 'thumbnails', 'medium', 'url') or Dict(json_obj, 'snippet', 'thumbnails', 'default', 'url')
         metadata.posters[thumb] = Proxy.Media(HTTP.Request( thumb ).content, sort_order=1)
-        metadata.title                   =                    json_obj['snippet']['title'      ].rstrip(' Playlist');  Log('[ ] title:       '+ json_obj['snippet']['title'])
+        metadata.title                   =                    json_obj['snippet']['title'      ];                      Log('[ ] title:       '+ json_obj['snippet']['title'])
         metadata.originally_available_at = Datetime.ParseDate(json_obj['snippet']['publishedAt']).date();              Log('[ ] publishedAt: '+ json_obj['snippet']['publishedAt'])
         metadata.studio                  = 'YouTube';                                                                  Log('[ ] studio:      YouTube')
 
