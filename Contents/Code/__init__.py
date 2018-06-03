@@ -202,7 +202,7 @@ def Update(metadata, media, lang, force, movie):
         ### Series info if PL id in series folder name
         thumb = Dict(json_obj, 'snippet', 'thumbnails', 'standard', 'url') or Dict(json_obj, 'snippet', 'thumbnails', 'high', 'url') or Dict(json_obj, 'snippet', 'thumbnails', 'medium', 'url') or Dict(json_obj, 'snippet', 'thumbnails', 'default', 'url')
         metadata.posters[thumb] = Proxy.Media(HTTP.Request( thumb ).content, sort_order=1)
-        metadata.title                   =                    json_obj['snippet']['title'      ].rstrip(' Playlist');  Log('[ ] title:       '+ json_obj['snippet']['title'])
+        metadata.title                   =                    json_obj['snippet']['title'      ];                      Log('[ ] title:       '+ json_obj['snippet']['title'])
         metadata.originally_available_at = Datetime.ParseDate(json_obj['snippet']['publishedAt']).date();              Log('[ ] publishedAt: '+ json_obj['snippet']['publishedAt'])
         metadata.studio                  = 'YouTube';                                                                  Log('[ ] studio:      YouTube')
 
