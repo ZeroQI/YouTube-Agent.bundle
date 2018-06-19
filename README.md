@@ -1,14 +1,19 @@
 # YouTube-Agent.bundle Plex Movie & TV Series library agent 
 
+Download playlist:
+Take video link: https://www.youtube.com/watch?v=f-wWBGo6a2w&list=PL22J3VaeABQD_IZs7y60I3lUrrFTzkpat
+click on top right on playlist name or remove v=video_id https://www.youtube.com/watch?list=PL22J3VaeABQD_IZs7y60I3lUrrFTzkpat
+.\youtube-dl.exe https://www.youtube.com/watch?list=PL22J3VaeABQD_IZs7y60I3lUrrFTzkpat
+
+YouTube IDs
+- Playlist id: PL and 16 hexadecimal characters 0-9 and A-F or 32 chars 0-9 a-Z _ - (EX: https://www.youtube.com/watch?v=aCl4SD7SkLE&list=PLMBYlcH3smRxxcXT7G-HHAj5czGS0sZsB)
+- Channel id: PL and 32 hexadecimal characters 0-9 and A-F or 32 chars 0-9 a-Z _ - (EX: (https://www.youtube.com/channel/UCYzPXprvl5Y-Sf0g4vX-m6g)
+- Video id: 11 chars long 0-9 a-Z _ -
+
 Requirements
 - Please use the Absolute Series Scanner to scan your media and leave the YouTube id in the series/movie title
 - leave the YouTube video ID on every file
-- Preferably Playlist id on series foldername
-
-YouTube IDs
-- Playlist id: PL and 16 hexadecimal characters 0-9 and A-F or 32 chars 0-9 a-Z _ -
-- Channel id: PL and 32 hexadecimal characters 0-9 and A-F or 32 chars 0-9 a-Z _ -
-- Video id: 11 chars long 0-9 a-Z _ -
+- Playlist (preffered) id OR Channel id on series foldername (as Search() need to assign an id to the series)
 
 Naming convention for Movie/Home Video library:
 - filename without extension named exactly the same as the YouTube video
@@ -33,7 +38,10 @@ Movie Library Fields supported:
 - genres (many? to test)
 - directors (1)
 
-Forked initially from paulds8 and sander1's 'YouTube-Agent.bundle' movie only agent initially:
+History
+=======
+
+Forked initially from paulds8 and sander1's 'YouTube-Agent.bundle' movie only agent:
 
 sander1 did the initial movie only agent using a given youtube video id
 https://github.com/sander1/YouTube-Agent.bundle
@@ -43,9 +51,54 @@ paulds8 did the initial title search fork i had to fix
 https://github.com/paulds8/YouTube-Agent.bundle/tree/namematch
 https://forums.plex.tv/discussion/300800/youtube-agent-matching-on-name
 
-Download playlist:
-Take video link: https://www.youtube.com/watch?v=f-wWBGo6a2w&list=PL22J3VaeABQD_IZs7y60I3lUrrFTzkpat
-click on top right on playlist name or remove v=video_id https://www.youtube.com/watch?list=PL22J3VaeABQD_IZs7y60I3lUrrFTzkpat
-.\youtube-dl.exe https://www.youtube.com/watch?list=PL22J3VaeABQD_IZs7y60I3lUrrFTzkpat
+Made it into a series agent straight away...
 
-Donation link: PayPal.Me/ZeroQI or https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=S8CUKCX4CWBBG&lc=IE&item_name=Plex%20movies%20and%20TV%20series%20Youtube%20Agent&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted
+Installation
+============
+
+Here is how to find the plug-in folder location:
+https://support.plex.tv/hc/en-us/articles/201106098-How-do-I-find-the-Plug-Ins-folder-
+
+Plex main folder location:
+
+    * '%LOCALAPPDATA%\Plex Media Server\'                                        # Windows Vista/7/8
+    * '%USERPROFILE%\Local Settings\Application Data\Plex Media Server\'         # Windows XP, 2003, Home Server
+    * '$HOME/Library/Application Support/Plex Media Server/'                     # Mac OS
+    * '$PLEX_HOME/Library/Application Support/Plex Media Server/',               # Linux
+    * '/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/', # Debian,Fedora,CentOS,Ubuntu
+    * '/usr/local/plexdata/Plex Media Server/',                                  # FreeBSD
+    * '/usr/pbi/plexmediaserver-amd64/plexdata/Plex Media Server/',              # FreeNAS
+    * '${JAIL_ROOT}/var/db/plexdata/Plex Media Server/',                         # FreeNAS
+    * '/c/.plex/Library/Application Support/Plex Media Server/',                 # ReadyNAS
+    * '/share/MD0_DATA/.qpkg/PlexMediaServer/Library/Plex Media Server/',        # QNAP
+    * '/volume1/Plex/Library/Application Support/Plex Media Server/',            # Synology, Asustor
+    * '/raid0/data/module/Plex/sys/Plex Media Server/',                          # Thecus
+    * '/raid0/data/PLEX_CONFIG/Plex Media Server/'                               # Thecus Plex community    
+
+Get the latest source zip in github release for hama https://github.com/ZeroQI/Youtube-Agent.bundle > "Clone or download > Download Zip
+Folders Youtube-Agent.bundle-master.zip and copy inside folder Youtube-Agent.bundle-master in plug-ins folders but rename to "Youtube-Agent.bundle" (remove -master) :
+
+Troubleshooting:
+================
+If you ask for something already answered in the readme, or post scanner issues on the agent page or vice-versa, please donate (will be refered to as the RTFM tax)
+
+If files and series are showing in Plex GUI with the right season, the scanner did its job
+If you miss metadata (serie title wrong, no posters, summary, wrong episode title or summaries, ep screenshot, etc...), that is the Agent doing.
+
+To avoid already solved issues, and make sure you do include all relevant logs in one go, please do the following:
+- Update to the latest Absolute Series Scanner, Youtube-Agent
+- deleting all Plex logs leaving folders intact
+- restart Plex
+- Update the series Metadata
+- including all the following logs: (location: https://support.plex.tv/hc/en-us/articles/200250417-Plex-Media-Server-Log-Files)
+   - [...]/Plex Media Server/Logs/PMS Plugin Logs/com.plexapp.agents.Youtube-Agent.log (Agent logs)
+   - [...]/Plex Media Server/Logs/PMS Plugin Logs/com.plexapp.system.log (show why the agent cannot launch)
+   - Screen capture to illustrate if needed. Above logs are still mandatory
+
+Support thread for agent:
+- https://github.com/ZeroQI/YouTube-Agent.bundle/issues (proven or confident enough it's a bug. Include the symptoms, the logs mentionned above)
+- https://forums.plex.tv/discussion/83106/rel-youtube-metadata-agent/p5 (not sure if bug, if bug will create a gihub issue ticket)
+
+Donation link:
+==============
+PayPal.Me/ZeroQI or https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=S8CUKCX4CWBBG&lc=IE&item_name=Plex%20movies%20and%20TV%20series%20Youtube%20Agent&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted
