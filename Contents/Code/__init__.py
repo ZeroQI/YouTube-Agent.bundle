@@ -144,8 +144,13 @@ def Search(results, media, lang, manual, movie):
         else:  Log.Info('search() - no id in title nor matching YouTube title: "{}", closest match: "{}", description: "{}"'.format(filename, Dict(video_details, 'items', 0, 'snippet', 'channelTitle'), Dict(video_details, 'items', 0, 'snippet', 'description')))
       elif 'error' in video_details:  Log.Info('search() - code: "{}", message: "{}"'.format(Dict(video_details, 'error', 'code'), Dict(video_details, 'error', 'message')))
     except Exception as e:  Log('search() - Could not retrieve data from YouTube for: "{}", Exception: "{}"'.format(filename, e))
+    
+    ###
     if not results:
-      Log('')
+      dir                 = GetMediaDir(media, movie)
+      library, root, path = GetLibraryRootPath(dir)
+      Log('Putting folder name "{}" as guid since no assign channel id or playlist id was assigned'.format(path.split(os.sep)[-1]))
+      results.Append( MetadataSearchResult( id='youtube-'+path.split(os.sep)[-1], name=filename, year=None, score=80, lang=lang ) )
     Log(''.ljust(157, '='))
   Log(''.ljust(157, '='))
 
@@ -155,6 +160,10 @@ def Update(metadata, media, lang, force, movie):
   season_map = {}
   channelId  = None
   
+  result = YOUTUBE_REGEX_VIDEO.search(guid)
+  if not guid.startswith('PL') and not guid.startswith('UC') and not result:
+    metadata.title = guid  #no id mode, update title so ep gets updated
+      
   ### Movie library and video tag ###
   Log(''.ljust(157, '='))
   Log('update() - metadata,id: "{}"'.format(guid))
