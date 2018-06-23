@@ -240,8 +240,6 @@ def Update(metadata, media, lang, force, movie):
 				URL_VIDEO_DETAILS = '{}&id={}&key={}'.format(YOUTUBE_VIDEO_DETAILS, guid, YOUTUBE_API_KEY)
 				video_details = json_load(URL_VIDEO_DETAILS)['items'][0]
 
-#REM		try:		 video_details = json_load(YOUTUBE_VIDEO_DETAILS % (guid))['items'][0]
-
 			except:
 				Log('video_details - Could not retrieve data from YouTube for: %s' % guid)
 
@@ -328,8 +326,6 @@ def Update(metadata, media, lang, force, movie):
 				URL_PLAYLIST_DETAILS = '{}&id={}&key={}'.format(YOUTUBE_PLAYLIST_DETAILS, guid, YOUTUBE_API_KEY)
 				json_playlist_details = json_load(URL_PLAYLIST_DETAILS)['items'][0]
 
-#REM			 json_playlist_details = json_load(YOUTUBE_PLAYLIST_DETAILS.format(guid))['items'][0] #Choosen per id hence one single result
-
 			except Exception as e:
 				Log('[!] json_playlist_details exception: {}, url: {}'.format(e, URL_PLAYLIST_DETAILS))
 
@@ -360,7 +356,6 @@ def Update(metadata, media, lang, force, movie):
 				URL_PLAYLIST_ITEMS	= '{}&playlistId={}&key={}'.format(YOUTUBE_PLAYLIST_ITEMS, guid, YOUTUBE_API_KEY)
 				json_playlist_items = json_load(URL_PLAYLIST_ITEMS)
 
-#REM		try:										json_playlist_items = json_load(YOUTUBE_PLAYLIST_ITEMS.format(guid)) #Choosen per id hence one single result
 			except Exception as e:
 				Log.Info('[!] json_playlist_items exception: {}, url: {}'.format(e, URL_PLAYLIST_ITEMS))
 
@@ -377,7 +372,6 @@ def Update(metadata, media, lang, force, movie):
 				URL_CHANNEL_DETAILS		= '{}&id={}&key={}'.format(YOUTUBE_CHANNEL_DETAILS,channel_id, YOUTUBE_API_KEY)
 				json_channel_details	= json_load(URL_CHANNEL_DETAILS)['items'][0]
 
-#REM		try:										json_channel_details = json_load(YOUTUBE_CHANNEL_DETAILS.format(channel_id))['items'][0]	#Choosen per id hence one single result
 			except Exception as e:
 				Log('exception: {}, url: {}'.format(e, URL_CHANNEL_DETAILS))
 
@@ -425,7 +419,6 @@ def Update(metadata, media, lang, force, movie):
 				URL_CHANNEL_ITEMS	= '{}&channelId={}&key={}'.format(YOUTUBE_CHANNEL_ITEMS, guid, YOUTUBE_API_KEY)
 				json_channel_items	= json_load(URL_CHANNEL_ITEMS)
 
-#REM		try:										json_channel_items = json_load(YOUTUBE_CHANNEL_ITEMS.format(guid))	#Choosen per id hence one single result
 			except Exception as e:
 				Log('exception: {}, url: {}'.format(e, URL_CHANNEL_ITEMS))
 
@@ -479,9 +472,11 @@ def Update(metadata, media, lang, force, movie):
 						Log.Info(videoId)
 						try:
 							url = '{}&id={}&key={}'.format(YOUTUBE_VIDEO_DETAILS, videoId, YOUTUBE_API_KEY)
-#REM						url = YOUTUBE_VIDEO_DETAILS % (videoId)
 							video_details = json_load(url)['items'][0]
-						except Exception as e:	Log('Error: "{}"'.format(e))
+
+						except Exception as e:
+							Log('Error: "{}"'.format(e))
+
 						else:
 							#Log.Info('[?] link:		 "https://www.youtube.com/watch?v={}"'.format(videoId))
 							rating													= float(10*int(video_details['statistics']['likeCount'])/(int(video_details['statistics']['dislikeCount'])+int(video_details['statistics']['likeCount'])))
