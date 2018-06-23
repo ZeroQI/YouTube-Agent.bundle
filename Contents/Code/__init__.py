@@ -2,21 +2,21 @@
 '''
 YouTube Movie and Series Metadata Agent
 
-Movie library	
-- movies/movies [video_id].ext
+Movie library
+	- movies/movies [video_id].ext
 
 Serie Library
-- Name [channel_id ]/file [video_id].ext	 #scanner use video id to number, season 1(or year youtube3/4 mode)
-- Name [Playlist_id]/file [video_id].ext	 #scanner use video id to number, season 1(or year youtube-2)
+	- Name [channel_id ]/file [video_id].ext	 # scanner use video id to number, season 1(or year youtube3/4 mode)
+	- Name [Playlist_id]/file [video_id].ext	 # scanner use video id to number, season 1(or year youtube-2)
 
-Collection			| Series	 | season | File
-----------------|----------|--------|-----------------------
-Subject				 | Channel	|			1 | loose videos with video_id. year as season?
-Subject/channel | Playlist |			1 | loose videos with video_id
+Collection		| Series	| season | File
+----------------|-----------|--------|-----------------------
+Subject			| Channel	|	1	 | loose videos with video_id. year as season?
+Subject/channel | Playlist 	|	1	 | loose videos with video_id
 
 IDs not used
-- username:		 channels.list(part="id", forUsername="username")
-- display name: search.list(part="snippet", type="channel", q="display name") #not unique
+	- username:		 channels.list(part="id", forUsername="username")
+	- display name: search.list(part="snippet", type="channel", q="display name") #not unique
 '''
 
 ### Imports ###
@@ -26,7 +26,6 @@ import inspect			# getfile, currentframe
 from io import open		#
 
 def Dict(var, *arg, **kwarg):	#Avoid TypeError: argument of type 'NoneType' is not iterable
-	Log.Info('[!] [DEBUGMAN]: Dict')
 	"""
 		Return the value of an (imbricated) dictionnary, return "" if doesn't exist unless "default=new_value" specified as end argument
 		Ex: Dict(variable_dict, 'field1', 'field2', default = 0)
@@ -39,7 +38,6 @@ def Dict(var, *arg, **kwarg):	#Avoid TypeError: argument of type 'NoneType' is n
 
 
 def natural_sort_key(s):
-	Log.Info('[!] [DEBUGMAN]: natural_sort_key')
 	"""
 	Natural sort function, avoid 1 10 11..19 2 20...
 	"""
@@ -49,7 +47,6 @@ def natural_sort_key(s):
 	return [int(text) if text.isdigit() else text for text in re.split(re.compile('([0-9]+)'), str(s).lower())]
 
 def ISO8601DurationToSeconds(duration):
-	Log.Info('[!] [DEBUGMAN]: ISO8601DurationToSeconds')
 	"""
 	Convert ISO8601 Duration format into seconds
 	"""
@@ -60,7 +57,6 @@ def ISO8601DurationToSeconds(duration):
 
 
 def GetMediaDir (media, movie, file=False):
-	Log.Info('[!] [DEBUGMAN]: GetMediaDir')
 	"""
 	Get media Directory
 	"""
@@ -73,8 +69,6 @@ def GetMediaDir (media, movie, file=False):
 				return media.seasons[s].episodes[e].items[0].parts[0].file if file else os.path.dirname(media.seasons[s].episodes[e].items[0].parts[0].file)
 
 def GetLibraryRootPath(dir):
-	Log.Info('[!] [DEBUGMAN]: GetLibraryRootPath')
-
 	"""
 	Get media root folder
 	"""
@@ -104,8 +98,6 @@ def GetLibraryRootPath(dir):
 
 
 def json_load(url):
-	Log.Info('[!] [DEBUGMAN]: json_load')
-
 	"""
 	Return JSON data
 	"""
@@ -137,19 +129,15 @@ def json_load(url):
 
 
 def Start():
-	Log.Info('[!] [DEBUGMAN]: Start')
-
 	HTTP.CacheTime					= CACHE_1MONTH
 	HTTP.Headers['User-Agent']		= 'Mozilla/5.0 (iPad; CPU OS 7_0_4 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11B554a Safari/9537.54'
 	HTTP.Headers['Accept-Language']	= 'en-us'
 
 def Search(results, media, lang, manual, movie):
-	Log.Info('[!] [DEBUGMAN]: Search')
-
-
 	"""
 	Assign unique ID
 	"""
+	YOUTUBE_API_KEY		= Prefs['YouTube-Agent_youtube_api_key']
 
 	filename = media.title if movie else media.show #os.path.splitext(os.path.basename(media.filename))[0]
 
@@ -186,7 +174,8 @@ def Search(results, media, lang, manual, movie):
 				Log('search() - id not found')
 		try:
 
-			video_details = json_load(YOUTUBE_VIDEO_SEARCH % (String.Quote(filename, usePlus=False)))
+			URL_VIDEO_SEARCH = '{}&q={}&key={}'.format(YOUTUBE_VIDEO_SEARCH, String.Quote(filename, usePlus=False), YOUTUBE_API_KEY)
+			video_details = json_load(URL_VIDEO_SEARCH)
 
 			if Dict(video_details, 'pageInfo', 'totalResults'):
 				Log.Info('filename: "{}", title:				"{}"'.format(filename, Dict(video_details, 'items', 0, 'snippet', 'title')))
@@ -215,7 +204,6 @@ def Search(results, media, lang, manual, movie):
 ### Download metadata using unique ID ###
 
 def Update(metadata, media, lang, force, movie):
-	Log.Info('[!] [DEBUGMAN]: Update')
 
 	YOUTUBE_API_KEY		= Prefs['YouTube-Agent_youtube_api_key']
 	guid				= metadata.id.replace("youtube-", "") if metadata.id.startswith('youtube-') else metadata.id
@@ -506,46 +494,28 @@ def Update(metadata, media, lang, force, movie):
 
 ### Agent declaration ##################################################################################################################################################
 class YouTubeSeriesAgent(Agent.TV_Shows):
-	Log.Info('[!] [DEBUGMAN]: class YouTubeSeriesAgent')
 	name, primary_provider, fallback_agent, contributes_to, accepts_from, languages = 'YouTube', True, None, None, ['com.plexapp.agents.localmedia'], [Locale.Language.NoLanguage]
 	def search (self, results,	media, lang, manual):	Search (results,	media, lang, manual, False)
 	def update (self, metadata, media, lang, force ):	Update (metadata, media, lang, force,	False)
 
 class YouTubeMovieAgentAgent(Agent.Movies):
-	Log.Info('[!] [DEBUGMAN]: class YouTubeMovieAgentAgent')
 	name, primary_provider, fallback_agent, contributes_to, accepts_from, languages = 'YouTube', True, None, None, ['com.plexapp.agents.localmedia'], [Locale.Language.NoLanguage]
 	def search (self, results,	media, lang, manual):	Search (results,	media, lang, manual, True)
 	def update (self, metadata, media, lang, force ):	Update (metadata, media, lang, force,	True)
 
 
 ### Variables ###
-# YOUTUBE_VIDEO_SEARCH		= 'https://content.googleapis.com/youtube/v3/search?q=%s&maxResults=1&part=snippet&key='									+ YOUTUBE_API_KEY
-# YOUTUBE_VIDEO_DETAILS		= 'https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=%s&key='							+ YOUTUBE_API_KEY
-# YOUTUBE_PLAYLIST_DETAILS 	= 'https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&id={}&key='									+ YOUTUBE_API_KEY
-# YOUTUBE_PLAYLIST_ITEMS	= 'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId={}&key='						+ YOUTUBE_API_KEY
-# YOUTUBE_CHANNEL_DETAILS	= 'https://www.googleapis.com/youtube/v3/channels?part=snippet%2CcontentDetails%2Cstatistics%2CbrandingSettings&id={}&key=' + YOUTUBE_API_KEY
-# YOUTUBE_CHANNEL_ITEMS	 	= 'https://www.googleapis.com/youtube/v3/search?order=date&part=snippet&type=video&channelId={}&maxResults=50&key='			+ YOUTUBE_API_KEY
 
-YOUTUBE_VIDEO_SEARCH		= 'https://content.googleapis.com/youtube/v3/search?q=%s&maxResults=1&part=snippet&key='									+ Prefs['YouTube-Agent_youtube_api_key']
+# YOUTUBE_VIDEO_SEARCH		= 'https://content.googleapis.com/youtube/v3/search?q=%s&maxResults=1&part=snippet&key='			+ Prefs['YouTube-Agent_youtube_api_key']
 
 YOUTUBE_API_BASE_URL		= 'https://www.googleapis.com/youtube/v3/'
 
+YOUTUBE_VIDEO_SEARCH		= YOUTUBE_API_BASE_URL + 'search?&maxResults=1&part=snippet'										# &q=string				&key=apikey
 YOUTUBE_VIDEO_DETAILS		= YOUTUBE_API_BASE_URL + 'videos?part=snippet,contentDetails,statistics'							# &id=string			&key=apikey
 YOUTUBE_PLAYLIST_DETAILS	= YOUTUBE_API_BASE_URL + 'playlists?part=snippet,contentDetails'									# &id=string 		 	&key=apikey
 YOUTUBE_PLAYLIST_ITEMS		= YOUTUBE_API_BASE_URL + 'playlistItems?part=snippet&maxResults=50'									# &playlistId=string	&key=apikey
 YOUTUBE_CHANNEL_DETAILS		= YOUTUBE_API_BASE_URL + 'channels?part=snippet%2CcontentDetails%2Cstatistics%2CbrandingSettings'	# &id=string			&key=apikey
 YOUTUBE_CHANNEL_ITEMS		= YOUTUBE_API_BASE_URL + 'search?order=date&part=snippet&type=video&maxResults=50'					# &channelId=string		&key=apikey
-
-# YOUTUBE_API_KEY			= 'AIzaSyC2q8yjciNdlYRNdvwbb7NEcDxBkv1Cass'
-# YOUTUBE_API_KEY			= Prefs['youtube_api_key']
-# YOUTUBE_API_KEY2			= Prefs['youtube_api_key']
-
-# YOUTUBE_VIDEO_SEARCH		= 'https://content.googleapis.com/youtube/v3/search?q=%s&maxResults=1&part=snippet&key='
-# YOUTUBE_VIDEO_DETAILS		= 'https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=%s&key='
-# YOUTUBE_PLAYLIST_DETAILS 	= 'https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&id={}&key='
-# YOUTUBE_PLAYLIST_ITEMS	= 'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId={}&key='
-# YOUTUBE_CHANNEL_DETAILS	= 'https://www.googleapis.com/youtube/v3/channels?part=snippet%2CcontentDetails%2Cstatistics%2CbrandingSettings&id={}&key='
-# YOUTUBE_CHANNEL_ITEMS	 	= 'https://www.googleapis.com/youtube/v3/search?order=date&part=snippet&type=video&channelId={}&maxResults=50&key='
 
 YOUTUBE_REGEX_VIDEO			= 	Regex('(\\[(youtube-)?|-)(?P<id>[a-z0-9\-_]{11})\\]?',									Regex.IGNORECASE)
 YOUTUBE_REGEX_PLAYLIST		= 	Regex('\\[(youtube-)?(?P<id>(PL[a-z0-9]{16}|PL[a-z0-9\-_]{32}|UC[a-z0-9\-_]{22}))\\]',	Regex.IGNORECASE)	#.*\[([Yy]ou[Tt]ube-)?PL[a-z0-9\-_]{11}
