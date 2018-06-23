@@ -1,3 +1,4 @@
 [
-  { "id":"add_user_as_director", "label":"Set YouTube usernames as director in metadata", "type":"bool", "default":"false"               }
+	{	"id":"add_user_as_director",			"label":"Set YouTube usernames as director in metadata",	"type":"bool",	"default":"false" },
+	{	"id":"YouTube-Agent_youtube_api_key",	"label":"YouTube API Key (Leave blank for Default Key)",	"type":"text",	"default":"AIzaSyC2q8yjciNdlYRNdvwbb7NEcDxBkv1Cass"	}
 ]
