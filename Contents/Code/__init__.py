@@ -386,6 +386,7 @@ class YouTubeMovieAgentAgent(Agent.Movies):
 
 ### Variables ###
 YOUTUBE_API_KEY          = 'AIzaSyC2q8yjciNdlYRNdvwbb7NEcDxBkv1Cass'
+YOUTUBE_API_KEY2         = Prefs['YouTube-Agent_youtube_api_key']
 YOUTUBE_VIDEO_SEARCH     = 'https://content.googleapis.com/youtube/v3/search?q=%s&maxResults=1&part=snippet&key='                                    + YOUTUBE_API_KEY
 YOUTUBE_VIDEO_DETAILS    = 'https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=%s&key='                          + YOUTUBE_API_KEY
 YOUTUBE_PLAYLIST_DETAILS = 'https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&id={}&key='                                  + YOUTUBE_API_KEY
@@ -410,6 +411,7 @@ PLEX_LIBRARY             = {}
 
 ### Plex Library XML ###
 Log.Info("Library: "+PlexRoot)  #Log.Info(file)
+Log.Info('[YouTube-Agent] API Key: {}'.format(YOUTUBE_API_KEY2)
 if os.path.isfile(os.path.join(PlexRoot, "X-Plex-Token.id")):
   Log.Info("'X-Plex-Token.id' file present")
   token_file=Data.Load(os.path.join(PlexRoot, "X-Plex-Token.id"))
