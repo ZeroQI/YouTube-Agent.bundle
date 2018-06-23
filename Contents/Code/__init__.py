@@ -364,10 +364,10 @@ def Update(metadata, media, lang, force, movie):
 				Log('exception: {}, url: {}'.format(e, URL_CHANNEL_DETAILS))
 
 			else:
-				Log.Info('[?] json_channel_details: {}'.format(json_channel_details.keys()))
-				Log.Info('[ ] title:			 "{}"'.format(Dict(json_channel_details, 'snippet', 'title')))
+				Log.Info('[?] json_channel_details:  {}'.format(json_channel_details.keys()))
+				Log.Info('[ ] title				  : "{}"'.format(Dict(json_channel_details, 'snippet', 'title')))
 
-				if not Dict(json_playlist_details, 'snippet', 'description'):
+				if not Dict(json_channel_details, 'snippet', 'description'):
 
 					if Dict(json_channel_details, 'snippet', 'description'):
 						metadata.summary =	Dict(json_channel_details, 'snippet', 'description');
@@ -413,7 +413,7 @@ def Update(metadata, media, lang, force, movie):
 			else:
 				Log.Info('json_channel_items: {}'.format(len(Dict(json_channel_items, 'items'))))
 				thumb = Dict(json_channel_items, 'snippet', 'thumbnails', 'standard', 'url') or Dict(json_channel_items, 'snippet', 'thumbnails', 'high', 'url') or Dict(json_channel_items, 'snippet', 'thumbnails', 'medium', 'url') or Dict(json_channel_items, 'snippet', 'thumbnails', 'default', 'url')
-				if not Dict(json_playlist_details, 'snippet', 'publishedAt'):
+				if not Dict(json_channel_details, 'snippet', 'publishedAt'):
 					metadata.originally_available_at = Datetime.ParseDate(Dict(json_channel_items, 'snippet', 'publishedAt')).date()
 					Log.Info('[ ] publishedAt:	{}'.format(Dict(json_channel_items, 'snippet', 'publishedAt' )))
 
