@@ -293,7 +293,11 @@ def Update(metadata, media, lang, force, movie):
     
     # Loading Channel Details for summary, country, background and role image
     if channel_id.startswith('UC'):
-      try:                    json_channel_details = json_load(YOUTUBE_CHANNEL_DETAILS.format(channel_id))['items'][0]  #Choosen per id hence one single result
+      try:
+
+        URL_CHANNEL_DETAILS   = '{}&id={}&key={}'.format(YOUTUBE_CHANNEL_DETAILS,channel_id, YOUTUBE_API_KEY)
+        json_channel_details  = json_load(URL_CHANNEL_DETAILS)['items'][0]
+
       except Exception as e:  Log('exception: {}, url: {}'.format(e, guid))
       else:
         Log.Info('[?] json_channel_details: {}'.format(json_channel_details.keys()))
