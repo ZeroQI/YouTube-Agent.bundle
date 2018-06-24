@@ -323,7 +323,11 @@ def Update(metadata, media, lang, force, movie):
 
     # Loading Channel
     if guid.startswith('UC'):
-      try:                    json_channel_items = json_load(YOUTUBE_CHANNEL_ITEMS.format(guid))  #Choosen per id hence one single result
+      try:
+
+        URL_CHANNEL_ITEMS = '{}&channelId={}&key={}'.format(YOUTUBE_CHANNEL_ITEMS, guid, YOUTUBE_API_KEY)
+        json_channel_items  = json_load(URL_CHANNEL_ITEMS)
+
       except Exception as e:  Log('exception: {}, url: {}'.format(e, guid))
       else:
         Log.Info('json_channel_items: {}'.format(len(Dict(json_channel_items, 'items'))))
