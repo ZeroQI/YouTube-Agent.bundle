@@ -134,7 +134,10 @@ def Search(results, media, lang, manual, movie):
           return
         Log('search() - id not found')
     try:
-      video_details = json_load(YOUTUBE_VIDEO_SEARCH % (String.Quote(filename, usePlus=False)))
+
+      URL_VIDEO_SEARCH = '{}&q={}&key={}'.format(YOUTUBE_VIDEO_SEARCH, String.Quote(filename, usePlus=False), YOUTUBE_API_KEY)
+      video_details = json_load(URL_VIDEO_SEARCH)
+
       if Dict(video_details, 'pageInfo', 'totalResults'):
         Log.Info('filename: "{}", title:        "{}"'.format(filename, Dict(video_details, 'items', 0, 'snippet', 'title')))
         Log.Info('filename: "{}", channelTitle: "{}"'.format(filename, Dict(video_details, 'items', 0, 'snippet', 'channelTitle')))
@@ -385,13 +388,16 @@ class YouTubeMovieAgentAgent(Agent.Movies):
   def update (self, metadata, media, lang, force ):  Update (metadata, media, lang, force,  True)
 
 ### Variables ###
-YOUTUBE_API_KEY          = 'AIzaSyC2q8yjciNdlYRNdvwbb7NEcDxBkv1Cass'
-YOUTUBE_VIDEO_SEARCH     = 'https://content.googleapis.com/youtube/v3/search?q=%s&maxResults=1&part=snippet&key='                                    + YOUTUBE_API_KEY
-YOUTUBE_VIDEO_DETAILS    = 'https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=%s&key='                          + YOUTUBE_API_KEY
-YOUTUBE_PLAYLIST_DETAILS = 'https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&id={}&key='                                  + YOUTUBE_API_KEY
-YOUTUBE_PLAYLIST_ITEMS   = 'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId={}&key='                       + YOUTUBE_API_KEY
-YOUTUBE_CHANNEL_DETAILS  = 'https://www.googleapis.com/youtube/v3/channels?part=snippet%2CcontentDetails%2Cstatistics%2CbrandingSettings&id={}&key=' + YOUTUBE_API_KEY
-YOUTUBE_CHANNEL_ITEMS   = 'https://www.googleapis.com/youtube/v3/search?order=date&part=snippet&type=video&channelId={}&maxResults=50&key='          + YOUTUBE_API_KEY
+
+YOUTUBE_API_BASE_URL        = 'https://www.googleapis.com/youtube/v3/'
+
+YOUTUBE_VIDEO_SEARCH     = YOUTUBE_API_BASE_URL + 'search?&maxResults=1&part=snippet'                                        # &q=string             &key=apikey
+YOUTUBE_VIDEO_DETAILS    = YOUTUBE_API_BASE_URL + 'videos?part=snippet,contentDetails,statistics'                            # &id=string            &key=apikey
+YOUTUBE_PLAYLIST_DETAILS = YOUTUBE_API_BASE_URL + 'playlists?part=snippet,contentDetails'                                    # &id=string            &key=apikey
+YOUTUBE_PLAYLIST_ITEMS   = YOUTUBE_API_BASE_URL + 'playlistItems?part=snippet&maxResults=50'                                 # &playlistId=string    &key=apikey
+YOUTUBE_CHANNEL_DETAILS  = YOUTUBE_API_BASE_URL + 'channels?part=snippet%2CcontentDetails%2Cstatistics%2CbrandingSettings'   # &id=string            &key=apikey
+YOUTUBE_CHANNEL_ITEMS    = YOUTUBE_API_BASE_URL + 'search?order=date&part=snippet&type=video&maxResults=50'                  # &channelId=string     &key=apikey
+
 YOUTUBE_REGEX_VIDEO      = Regex('(\\[(youtube-)?|-)(?P<id>[a-z0-9\-_]{11})\\]?',                   Regex.IGNORECASE)
 YOUTUBE_REGEX_PLAYLIST   = Regex('\\[(youtube-)?(?P<id>(PL[a-z0-9]{16}|PL[a-z0-9\-_]{32}|UC[a-z0-9\-_]{22}))\\]',  Regex.IGNORECASE)  #.*\[([Yy]ou[Tt]ube-)?PL[a-z0-9\-_]{11}
 YOUTUBE_CATEGORY_ID      = {  '1': 'Film & Animation'     ,  '2': 'Autos & Vehicles'     , '10': 'Music'                , '15': 'Pets & Animals',
