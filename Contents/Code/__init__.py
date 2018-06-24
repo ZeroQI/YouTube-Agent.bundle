@@ -68,10 +68,7 @@ def GetLibraryRootPath(dir):
       Log.Info('[!] ASS root scanner file present: "{}"'.format(filename))
       with open(filename, 'r') as file:  line=file.read()
       for root in [os.sep.join(dir.split(os.sep)[0:x+2]) for x in range(dir.count(os.sep)-1, -1, -1)]:
-        if "root: '{}'".format(root) in line:
-          path = os.path.relpath(dir, root).rstrip('.')
-          break
-        Log.Info('[!] root not found: "{}"'.format(root))
+        if "root: '{}'".format(root) in line:  path = os.path.relpath(dir, root).rstrip('.');  break  #Log.Info('[!] root not found: "{}"'.format(root))
       else: path, root = '_unknown_folder', '';  
     else:  Log.Info('[!] ASS root scanner file missing: "{}"'.format(filename))
   return library, root, path
