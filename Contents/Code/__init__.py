@@ -263,7 +263,11 @@ def Update(metadata, media, lang, force, movie):
     if guid.startswith('PL'):
 
       Log.Info('[?] json_playlist_details')
-      try:                    json_playlist_details = json_load(YOUTUBE_PLAYLIST_DETAILS.format(guid))['items'][0] #Choosen per id hence one single result
+      try:
+
+        URL_PLAYLIST_DETAILS = '{}&id={}&key={}'.format(YOUTUBE_PLAYLIST_DETAILS, guid, YOUTUBE_API_KEY)
+        json_playlist_details = json_load(URL_PLAYLIST_DETAILS)['items'][0]
+
       except Exception as e:  Log('[!] json_playlist_details exception: {}, url: {}'.format(e, YOUTUBE_PLAYLIST_DETAILS.format(guid)))
       else:
         Log.Info('[?] json_playlist_details: {}'.format(json_playlist_details.keys()))
