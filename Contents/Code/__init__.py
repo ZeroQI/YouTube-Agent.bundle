@@ -102,10 +102,13 @@ def Start():
 
 ### Assign unique ID ###
 def Search(results, media, lang, manual, movie):
+
+  YOUTUBE_API_KEY   = Prefs['YouTube-Agent_youtube_api_key']
+
   filename = media.title if movie else media.show #os.path.splitext(os.path.basename(media.filename))[0]
   Log(''.ljust(157, '='))
   Log('search()')
-  
+
   try:
     regex  = 'YOUTUBE_REGEX_PLAYLIST'
     result = YOUTUBE_REGEX_PLAYLIST.search(filename)
@@ -147,7 +150,7 @@ def Search(results, media, lang, manual, movie):
         else:  Log.Info('search() - no id in title nor matching YouTube title: "{}", closest match: "{}", description: "{}"'.format(filename, Dict(video_details, 'items', 0, 'snippet', 'channelTitle'), Dict(video_details, 'items', 0, 'snippet', 'description')))
       elif 'error' in video_details:  Log.Info('search() - code: "{}", message: "{}"'.format(Dict(video_details, 'error', 'code'), Dict(video_details, 'error', 'message')))
     except Exception as e:  Log('search() - Could not retrieve data from YouTube for: "{}", Exception: "{}"'.format(filename, e))
-    
+
     ###
     if not results:
       dir                 = GetMediaDir(media, movie)
@@ -159,14 +162,17 @@ def Search(results, media, lang, manual, movie):
 
 ### Download metadata using unique ID ###
 def Update(metadata, media, lang, force, movie):
+
+  YOUTUBE_API_KEY   = Prefs['YouTube-Agent_youtube_api_key']
+
   guid       = metadata.id.replace("youtube-", "") if metadata.id.startswith('youtube-') else metadata.id
   season_map = {}
   channelId  = None
-  
+
   result = YOUTUBE_REGEX_VIDEO.search(guid)
   if not guid.startswith('PL') and not guid.startswith('UC') and not result:
     metadata.title = guid  #no id mode, update title so ep gets updated
-      
+
   ### Movie library and video tag ###
   Log(''.ljust(157, '='))
   Log('update() - metadata,id: "{}"'.format(guid))
@@ -174,7 +180,11 @@ def Update(metadata, media, lang, force, movie):
 
     # YouTube video id given
     if guid and not guid.startswith('PL'):
-      try:     video_details = json_load(YOUTUBE_VIDEO_DETAILS % (guid))['items'][0]
+      try:
+
+        URL_VIDEO_DETAILS = '{}&id={}&key={}'.format(YOUTUBE_VIDEO_DETAILS, guid, YOUTUBE_API_KEY)
+        video_details = json_load(URL_VIDEO_DETAILS)['items'][0]
+
       except:  Log('video_details - Could not retrieve data from YouTube for: %s' % guid)
       else:
         Log('video_details - Loaded video details from: "{}"'.format(YOUTUBE_VIDEO_DETAILS % (guid)))
@@ -346,8 +356,11 @@ def Update(metadata, media, lang, force, movie):
           if result:
             videoId = result.group('id')
             Log.Info(videoId)
-            url = YOUTUBE_VIDEO_DETAILS % (videoId)
-            try:                    video_details = json_load(url)['items'][0]
+            try:
+
+              url = '{}&id={}&key={}'.format(YOUTUBE_VIDEO_DETAILS, videoId, YOUTUBE_API_KEY)
+              video_details = json_load(url)['items'][0]
+
             except Exception as e:  Log('Error: "{}"'.format(e))
             else:
               #Log.Info('[?] link:     "https://www.youtube.com/watch?v={}"'.format(videoId))
