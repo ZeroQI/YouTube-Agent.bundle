@@ -281,7 +281,11 @@ def Update(metadata, media, lang, force, movie):
         else:                                        Log('[X] posters:   {}'.format(thumb))
         
       Log.Info('[?] json_playlist_items')
-      try:                    json_playlist_items = json_load(YOUTUBE_PLAYLIST_ITEMS.format(guid)) #Choosen per id hence one single result
+      try:
+
+        URL_PLAYLIST_ITEMS  = '{}&playlistId={}&key={}'.format(YOUTUBE_PLAYLIST_ITEMS, guid, YOUTUBE_API_KEY)
+        json_playlist_items = json_load(URL_PLAYLIST_ITEMS)
+
       except Exception as e:  Log.Info('[!] json_playlist_items exception: {}, url: {}'.format(e, YOUTUBE_PLAYLIST_ITEMS.format(guid)))
       else:                   Log.Info('[?] json_playlist_items: {}'.format(json_playlist_items.keys()))
         
