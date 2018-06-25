@@ -5,6 +5,7 @@ Take video link: https://www.youtube.com/watch?v=f-wWBGo6a2w&list=PL22J3VaeABQD_
 click on top right on playlist name or remove v=video_id https://www.youtube.com/watch?list=PL22J3VaeABQD_IZs7y60I3lUrrFTzkpat
 .\youtube-dl.exe https://www.youtube.com/watch?list=PL22J3VaeABQD_IZs7y60I3lUrrFTzkpat
 
+
 YouTube IDs
 - Playlist id: PL and 16 hexadecimal characters 0-9 and A-F or 32 chars 0-9 a-Z _ - (EX: https://www.youtube.com/watch?v=aCl4SD7SkLE&list=PLMBYlcH3smRxxcXT7G-HHAj5czGS0sZsB)
 - Channel id: PL and 32 hexadecimal characters 0-9 and A-F or 32 chars 0-9 a-Z _ - (EX: (https://www.youtube.com/channel/UCYzPXprvl5Y-Sf0g4vX-m6g)
@@ -37,6 +38,25 @@ Movie Library Fields supported:
 - year
 - genres (many? to test)
 - directors (1)
+
+Exemple
+=======
+
+CaRtOoNz [UCdQWs2nw6w77Rw0t-37a4OA]
+- Ben and Ed:
+	Ben and Ed _ 'My Zombie Best Friend!' (I Didn't Need Those Legs Anyway!) [fRFr7L_qgEo].mkv
+	Ben and Ed _ 'Clownin Around!' (F_ck You Neck-Beard!) [Nh9eILgD5N4].mkv
+- Golf With Your Friends
+	Golf With Friends _ HOLE IN ONE...THOUSAND! (w_ H2O Delirious, Bryce, & Ohmwrecker) [81er8CP24h8].mkv
+	Golf With Friends _ GOLF LIKE AN EGYPTIAN! (w_ H2O Delirious, Bryce, & Ohmwrecker) [gKYid-SjDiE].mkv
+
+/H2ODelirious [UCClNRixXlagwAd--5MwJKCw]
+- Ben and Ed 
+	Ben And Ed Ep.1 (MUST SAVE BEN) BRAINNNNNSSSS [9YeXl28l9Yg].mkv
+	Ben And Ed - Blood Party - ANGRYLIRIOUS!!!!! (I CAN DO THIS!) [BEDE2z3G3hY].mkv
+- Golf With Your Friends
+	Golf With Your Friends - 1st Time Playing! 'Professionals' [wxS52xI_W_Y].mkv
+	Golf With Your Friends - Hitting Balls, Stroking Out! [GdLon0CCEXE].mkv
 
 History
 =======
