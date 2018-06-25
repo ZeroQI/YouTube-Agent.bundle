@@ -103,12 +103,13 @@ def Search(results, media, lang, manual, movie):
   YOUTUBE_API_KEY   = Prefs['YouTube-Agent_youtube_api_key']
 
   filename = media.title if movie else media.show #os.path.splitext(os.path.basename(media.filename))[0]
+  dir      = GetMediaDir(media, movie)
   Log(''.ljust(157, '='))
-  Log('search()')
-
+  Log('search() - dir: {}, filename: {}'.format(dir, filename))
+  
+  array = [('YOUTUBE_REGEX_PLAYLIST', YOUTUBE_REGEX_PLAYLIST), ('YOUTUBE_REGEX_CHANNEL', YOUTUBE_REGEX_CHANNEL), ('YOUTUBE_REGEX_VIDEO', YOUTUBE_REGEX_VIDEO)]
   try:
     for regex, url in array:
-
       result = url.search(filename)
       if result:
         guid = result.group('id')
@@ -116,19 +117,13 @@ def Search(results, media, lang, manual, movie):
         results.Append( MetadataSearchResult( id='youtube|{}|{}'.format(guid,os.path.basename(dir)),  name=filename, year=None, score=100, lang=lang ) )
         return
       else: Log.Info('search() - YouTube ID not found - regex: "{}"'.format(regex))  
-
-
-
-
     else:        guid = None
   except Exception as e:  guid = None;  Log('search() - filename: "{}" Regex failed to find YouTube id: "{}", error: "{}"'.format(filename, regex, e))
   if not guid:
     Log.Info('no guid found')
     if movie:
       dir = os.path.dirname(filename)
-
     else:    
-    
       s = media.seasons.keys()[0] if media.seasons.keys()[0]!='0' else media.seasons.keys()[1] if len(media.seasons.keys()) >1 else None
       if s:
         e          = media.seasons[s].episodes.keys()[0]
@@ -174,10 +169,6 @@ def Update(metadata, media, lang, force, movie):
   season_map      = {}
   channelId       = None
   if not guid.startswith('PL'):  metadata.title = dir  #no id mode, update title so ep gets updated
-  
-  
-  
-  
 
   ### Movie library and video tag ###
   Log(''.ljust(157, '='))
@@ -255,8 +246,6 @@ def Update(metadata, media, lang, force, movie):
         collection = re.sub(r'\[.*\]', '', reverse_path[-1]).strip()
         Log.Info('[ ] collections:        "{}"'.format(collection))
         if collection not in metadata.collections:  metadata.collections=[collection]
-        
-
       else:  Log.Info("Grouping folder not found or single folder, root: {}, path: {}, Grouping folder: {}, subdirs: {}, reverse_path: {}".format(root, path, os.path.basename(series_root_folder), subfolder_count, reverse_path))
 
     #
@@ -267,7 +256,6 @@ def Update(metadata, media, lang, force, movie):
     json_channel_items    = {}
     json_channel_details  = {}
     metadata.studio       = 'YouTube'
-
     
     # Loading Playlist
     if guid.startswith('PL'):
