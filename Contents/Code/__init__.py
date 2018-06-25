@@ -168,7 +168,8 @@ def Update(metadata, media, lang, force, movie):
   temp, guid, dir = metadata.id.split("|")
   season_map      = {}
   channelId       = None
-  if not guid.startswith('PL'):  metadata.title = dir  #no id mode, update title so ep gets updated
+  
+  if not guid.startswith('PL'):  metadata.title = re.sub(r'\[.*\]', '', dir).strip()  #no id mode, update title so ep gets updated
 
   ### Movie library and video tag ###
   Log(''.ljust(157, '='))
