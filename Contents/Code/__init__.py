@@ -137,7 +137,7 @@ def Search(results, media, lang, manual, movie):
         guid   = result.group('id') if result else ''
         if result or os.path.exists(os.path.join(dir, 'youtube.id')):
           Log('search() - filename: "{}", found season YouTube playlist id, result.group("id"): {}'.format(filename, result.group('id')))
-          results.Append( MetadataSearchResult( id='youtube|{}|{}'.format(guid,dir),, name=filename, year=None, score=100, lang=lang ) )
+          results.Append( MetadataSearchResult( id='youtube|{}|{}'.format(guid,dir), name=filename, year=None, score=100, lang=lang ) )
           Log(''.ljust(157, '='))
           return
         Log('search() - id not found')
