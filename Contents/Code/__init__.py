@@ -69,7 +69,7 @@ def GetLibraryRootPath(dir):
       with open(filename, 'r') as file:  line=file.read()
       for root in [os.sep.join(dir.split(os.sep)[0:x+2]) for x in range(dir.count(os.sep)-1, -1, -1)]:
         if "root: '{}'".format(root) in line:  path = os.path.relpath(dir, root).rstrip('.');  break  #Log.Info('[!] root not found: "{}"'.format(root))
-      else: path, root = '_unknown_folder', '';
+      else: path, root = '_unknown_folder', ''
     else:  Log.Info('[!] ASS root scanner file missing: "{}"'.format(filename))
   return library, root, path
 
@@ -107,29 +107,37 @@ def Search(results, media, lang, manual, movie):
   Log('search()')
 
   try:
-    regex  = 'YOUTUBE_REGEX_PLAYLIST'
-    result = YOUTUBE_REGEX_PLAYLIST.search(filename)
-    if result: guid = result.group('id')
-    else: 
-      regex  = 'YOUTUBE_REGEX_VIDEO'
-      result = YOUTUBE_REGEX_VIDEO.search(filename)
-      if result: guid = result.group('id')
-      else:      guid = None
+    for regex, url in array:
+
+      result = url.search(filename)
+      if result:
+        guid = result.group('id')
+        Log.Info('search() - YouTube ID found - regex: {}, youtube ID: "{}"'.format(regex, guid))
+        results.Append( MetadataSearchResult( id='youtube|{}|{}'.format(guid,os.path.basename(dir)),  name=filename, year=None, score=100, lang=lang ) )
+        return
+      else: Log.Info('search() - YouTube ID not found - regex: "{}"'.format(regex))  
+
+
+
+
+    else:        guid = None
   except Exception as e:  guid = None;  Log('search() - filename: "{}" Regex failed to find YouTube id: "{}", error: "{}"'.format(filename, regex, e))
-  if guid:
-    Log('search() - filename: "{}", found youtube ID: "{}"'.format(filename, guid))
-    results.Append( MetadataSearchResult( id='youtube-'+guid,  name=filename, year=None, score=100, lang=lang ) )
-  else:
-    if not movie:
+  if not guid:
+    Log.Info('no guid found')
+    if movie:
+      dir = os.path.dirname(filename)
+
+    else:    
+    
       s = media.seasons.keys()[0] if media.seasons.keys()[0]!='0' else media.seasons.keys()[1] if len(media.seasons.keys()) >1 else None
       if s:
         e          = media.seasons[s].episodes.keys()[0]
         dir        = os.path.dirname(media.seasons[s].episodes[e].items[0].parts[0].file)
-        result = YOUTUBE_REGEX_PLAYLIST.search(os.path.basename(dir))
+        result = YOUTUBE_REGEX_PLAYLIST.search(os.path.basename(os.path.dirname(dir)))
         guid   = result.group('id') if result else ''
         if result or os.path.exists(os.path.join(dir, 'youtube.id')):
           Log('search() - filename: "{}", found season YouTube playlist id, result.group("id"): {}'.format(filename, result.group('id')))
-          results.Append( MetadataSearchResult( id='youtube-'+guid, name=filename, year=None, score=100, lang=lang ) )
+          results.Append( MetadataSearchResult( id='youtube|{}|{}'.format(guid,dir),, name=filename, year=None, score=100, lang=lang ) )
           Log(''.ljust(157, '='))
           return
         Log('search() - id not found')
@@ -143,7 +151,7 @@ def Search(results, media, lang, manual, movie):
         Log.Info('filename: "{}", channelTitle: "{}"'.format(filename, Dict(video_details, 'items', 0, 'snippet', 'channelTitle')))
         if filename == Dict(video_details, 'items', 0, 'snippet', 'channelTitle'):
           Log.Info('filename: "{}", found exact matching YouTube title: "{}", description: "{}"'.format(filename, Dict(video_details, 'items', 0, 'snippet', 'channelTitle'), Dict(video_details, 'items', 0, 'snippet', 'description')))
-          results.Append( MetadataSearchResult( id='youtube-'+Dict(video_details, 'items', 0, 'id', 'channelId'), name=filename, year=None, score=100, lang=lang ) )
+          results.Append( MetadataSearchResult( id='youtube|{}|{}'.format(Dict(video_details, 'items', 0, 'id', 'channelId'),dir), name=filename, year=None, score=100, lang=lang ) )
         else:  Log.Info('search() - no id in title nor matching YouTube title: "{}", closest match: "{}", description: "{}"'.format(filename, Dict(video_details, 'items', 0, 'snippet', 'channelTitle'), Dict(video_details, 'items', 0, 'snippet', 'description')))
       elif 'error' in video_details:  Log.Info('search() - code: "{}", message: "{}"'.format(Dict(video_details, 'error', 'code'), Dict(video_details, 'error', 'message')))
     except Exception as e:  Log('search() - Could not retrieve data from YouTube for: "{}", Exception: "{}"'.format(filename, e))
@@ -153,7 +161,7 @@ def Search(results, media, lang, manual, movie):
       dir                 = GetMediaDir(media, movie)
       library, root, path = GetLibraryRootPath(dir)
       Log('Putting folder name "{}" as guid since no assign channel id or playlist id was assigned'.format(path.split(os.sep)[-1]))
-      results.Append( MetadataSearchResult( id='youtube-'+path.split(os.sep)[-1], name=filename, year=None, score=80, lang=lang ) )
+      results.Append( MetadataSearchResult( id='youtube|{}|{}'.format(path.split(os.sep)[-2] if os.sep in path else '', dir), name=filename, year=None, score=80, lang=lang ) )
     Log(''.ljust(157, '='))
   Log(''.ljust(157, '='))
 
@@ -162,17 +170,18 @@ def Update(metadata, media, lang, force, movie):
 
   YOUTUBE_API_KEY   = Prefs['YouTube-Agent_youtube_api_key']
 
-  guid       = metadata.id.replace("youtube-", "") if metadata.id.startswith('youtube-') else metadata.id
-  season_map = {}
-  channelId  = None
-
-  result = YOUTUBE_REGEX_VIDEO.search(guid)
-  if not guid.startswith('PL') and not guid.startswith('UC') and not result:
-    metadata.title = guid  #no id mode, update title so ep gets updated
+  temp, guid, dir = metadata.id.split("|")
+  season_map      = {}
+  channelId       = None
+  if not guid.startswith('PL'):  metadata.title = dir  #no id mode, update title so ep gets updated
+  
+  
+  
+  
 
   ### Movie library and video tag ###
   Log(''.ljust(157, '='))
-  Log('update() - metadata,id: "{}"'.format(guid))
+  Log('update() - guid: {}, dir: {}, metadata.id: {}'.format(guid, dir, metadata.id))
   if movie:
 
     # YouTube video id given
@@ -243,26 +252,30 @@ def Update(metadata, media, lang, force, movie):
 
       if len(reverse_path)>1 and not season_folder_first and subfolder_count>1:  ### grouping folders only ###
         Log.Info("Grouping folder found, root: {}, path: {}, Grouping folder: {}, subdirs: {}, reverse_path: {}".format(root, path, os.path.basename(series_root_folder), subfolder_count, reverse_path))
-        Log.Info('[ ] collections:        "{}"'.format(reverse_path[-1]))
-        if reverse_path[-1] not in metadata.collections:  metadata.collections=[reverse_path[-1]]
+        collection = re.sub(r'\[.*\]', '', reverse_path[-1]).strip()
+        Log.Info('[ ] collections:        "{}"'.format(collection))
+        if collection not in metadata.collections:  metadata.collections=[collection]
+        
 
       else:  Log.Info("Grouping folder not found or single folder, root: {}, path: {}, Grouping folder: {}, subdirs: {}, reverse_path: {}".format(root, path, os.path.basename(series_root_folder), subfolder_count, reverse_path))
 
     #
-    channel_id           = guid if guid.startswith('UC') else ''
-    json                 = {}
-    json_playlist_items  = {}
-    json_channel_items   = {}
-    json_channel_details = {}
-    metadata.studio      = 'YouTube'
+    channel_id            = guid if guid.startswith('UC') else ''
+    json                  = {}
+    json_playlist_details = {}
+    json_playlist_items   = {}
+    json_channel_items    = {}
+    json_channel_details  = {}
+    metadata.studio       = 'YouTube'
 
+    
     # Loading Playlist
     if guid.startswith('PL'):
 
       Log.Info('[?] json_playlist_details')
       try:
 
-        URL_PLAYLIST_DETAILS = '{}&id={}&key={}'.format(YOUTUBE_PLAYLIST_DETAILS, guid, YOUTUBE_API_KEY)
+        URL_PLAYLIST_DETAILS  = '{}&id={}&key={}'.format(YOUTUBE_PLAYLIST_DETAILS, guid, YOUTUBE_API_KEY)
         json_playlist_details = json_load(URL_PLAYLIST_DETAILS)['items'][0]
 
       except Exception as e:  Log('[!] json_playlist_details exception: {}, url: {}'.format(e, YOUTUBE_PLAYLIST_DETAILS.format(guid)))
@@ -301,9 +314,13 @@ def Update(metadata, media, lang, force, movie):
         Log.Info('[ ] title:       "{}"'.format(Dict(json_channel_details, 'snippet', 'title'      )))
         if not Dict(json_playlist_details, 'snippet', 'description'):
           if Dict(json_channel_details, 'snippet', 'description'):  metadata.summary =  Dict(json_channel_details, 'snippet', 'description');
-          elif guid.startswith('PL'):  metadata.summary = 'No Playlist nor Channel summary'
-          else:                        metadata.summary = 'No Channel summary'
-          Log.Info('[ ] summary:     "{}"'.format(Dict(json_channel_details, 'snippet', 'description').replace('\n', '. ')))  #
+          #elif guid.startswith('PL'):  metadata.summary = 'No Playlist nor Channel summary'
+          else:
+            summary  = 'Channel with {} videos, '.format(Dict(json_channel_details, 'statistics', 'videoCount'     ))
+            summary += '{} subscribers, '.format(Dict(json_channel_details, 'statistics', 'subscriberCount'))
+            summary += '{} views'.format(Dict(json_channel_details, 'statistics', 'viewCount'      ))
+            metadata.summary = summary  #metadata.summary = 'No Channel summary'
+            Log.Info('[ ] summary:     "{}"'.format(Dict(json_channel_details, 'snippet', 'description').replace('\n', '. ')))  #
         if Dict(json_channel_details,'snippet','country') and Dict(json_channel_details,'snippet','country') not in metadata.countries:
           metadata.countries.add(Dict(json_channel_details,'snippet','country'));  Log.Info('[ ] country: {}'.format(Dict(json_channel_details,'snippet','country') ))
         metadata.roles.clear()
@@ -312,29 +329,32 @@ def Update(metadata, media, lang, force, movie):
         role.name  = Dict(json_channel_details, 'snippet', 'title')
         role.photo = Dict(json_channel_details, 'snippet', 'thumbnails', 'medium', 'url') or Dict(json_channel_details, 'snippet', 'thumbnails', 'high', 'url')   or Dict(json_channel_details, 'snippet', 'thumbnails', 'default', 'url')
         Log.Info('[ ] role:        {}'.format(Dict(json_channel_details,'snippet','title')))
-        #thumb = Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvLowImageUrl' ) or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvMediumImageUrl') \
-        #     or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvHighImageUrl') or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvImageUrl'      )
-        thumb = Dict(json_channel_details, 'brandingSettings', 'image', 'bannerImageUrl' )
+        thumb = Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvLowImageUrl' ) or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvMediumImageUrl') \
+             or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvHighImageUrl') or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvImageUrl'      )
         if thumb and thumb not in metadata.art:  Log('[ ] art:       {}'.format(thumb));  metadata.art [thumb] = Proxy.Media(HTTP.Request(thumb).content, sort_order=1)
         else:                                    Log('[X] art:       {}'.format(thumb))
 
+        if thumb and thumb not in metadata.banners:  Log('[ ] banners:   {}'.format(thumb));  metadata.banners [thumb] = Proxy.Media(HTTP.Request(thumb).content, sort_order=1)
+        else:                                        Log('[X] banners:   {}'.format(thumb))
+
     # Loading Channel
-    if guid.startswith('UC'):
-      try:
+    #if guid.startswith('UC'):
+    #  try:
 
-        URL_CHANNEL_ITEMS = '{}&channelId={}&key={}'.format(YOUTUBE_CHANNEL_ITEMS, guid, YOUTUBE_API_KEY)
-        json_channel_items  = json_load(URL_CHANNEL_ITEMS)
+    #    URL_CHANNEL_ITEMS = '{}&channelId={}&key={}'.format(YOUTUBE_CHANNEL_ITEMS, guid, YOUTUBE_API_KEY)
+    #    json_channel_items  = json_load(URL_CHANNEL_ITEMS)
 
-      except Exception as e:  Log('exception: {}, url: {}'.format(e, guid))
-      else:
-        Log.Info('json_channel_items: {}'.format(len(Dict(json_channel_items, 'items'))))
-        thumb                            = Dict(json_channel_items, 'snippet', 'thumbnails', 'standard', 'url') or Dict(json_channel_items, 'snippet', 'thumbnails', 'high', 'url') or Dict(json_channel_items, 'snippet', 'thumbnails', 'medium', 'url') or Dict(json_channel_items, 'snippet', 'thumbnails', 'default', 'url')
-        if not Dict(json_playlist_details, 'snippet', 'publishedAt'):  metadata.originally_available_at = Datetime.ParseDate(Dict(json_channel_items, 'snippet', 'publishedAt')).date();  Log.Info('[ ] publishedAt:  {}'.format(Dict(json_channel_items, 'snippet', 'publishedAt' )))
-        if thumb:                                                      metadata.posters[thumb]          = Proxy.Media(HTTP.Request( thumb ).content, sort_order=1);         Log.Info('[ ] thumb:       '+ thumb)
+    #  except Exception as e:  Log('exception: {}, url: {}'.format(e, guid))
+    #  else:
+    #    Log.Info('json_channel_items: {}'.format(len(Dict(json_channel_items, 'items'))))
+    #    thumb                            = Dict(json_channel_items, 'snippet', 'thumbnails', 'standard', 'url') or Dict(json_channel_items, 'snippet', 'thumbnails', 'high', 'url') or Dict(json_channel_items, 'snippet', 'thumbnails', 'medium', 'url') or Dict(json_channel_items, 'snippet', 'thumbnails', 'default', 'url')
+    #    if not Dict(json_playlist_details, 'snippet', 'publishedAt'):  metadata.originally_available_at = Datetime.ParseDate(Dict(json_channel_items, 'snippet', 'publishedAt')).date();  Log.Info('[ ] publishedAt:  {}'.format(Dict(json_channel_items, 'snippet', 'publishedAt' )))
+     #   if thumb:                                                      metadata.posters[thumb]          = Proxy.Media(HTTP.Request( thumb ).content, sort_order=1);         Log.Info('[ ] thumb:       '+ thumb)
 
     ### Season + Episode loop ###
     genre_array = {}
     episodes    = 0
+    first       = True
     for s in sorted(media.seasons, key=natural_sort_key):
       season = metadata.seasons[s]
       Log.Info("".ljust(157, '='))
@@ -349,26 +369,27 @@ def Update(metadata, media, lang, force, movie):
         Log.Info('metadata.seasons[{:>2}].episodes[{:>3}] "{}"'.format(s, e, filename))
         json = Dict(json_playlist_items, 'items') or Dict(json_channel_items, 'items') or {}
 
-        for video in Dict(json_playlist_items, 'items') or Dict(json_channel_items, 'items') or {}:
+        for video in Dict(json_playlist_items, 'items') or {}:
           videoId = Dict(video, 'id', 'videoId') or Dict(video, 'snippet', 'resourceId', 'videoId')
           if videoId and videoId in filename:
 
             # videoId not in Playlist/channel
-            thumb = Dict(video, 'snippet', 'thumbnails', 'standard', 'url') or Dict(video, 'snippet', 'thumbnails', 'high', 'url') or Dict(video, 'snippet', 'thumbnails', 'medium', 'url') or Dict(video, 'snippet', 'thumbnails', 'default', 'url')
+            thumb                           = Dict(video, 'snippet', 'thumbnails', 'standard', 'url') or Dict(video, 'snippet', 'thumbnails', 'high', 'url') or Dict(video, 'snippet', 'thumbnails', 'medium', 'url') or Dict(video, 'snippet', 'thumbnails', 'default', 'url')
+            picture                         = HTTP.Request(thumb).content 
             episode.title                   = Dict(video, 'snippet', 'title'       );                            Log.Info('[ ] title:        {}'.format(Dict(video, 'snippet', 'title'       )))
             episode.summary                 = Dict(video, 'snippet', 'description' );                            Log.Info('[ ] description:  {}'.format(Dict(video, 'snippet', 'description' ).replace('\n', '. ')))
             episode.originally_available_at = Datetime.ParseDate(Dict(video, 'snippet', 'publishedAt')).date();  Log.Info('[ ] publishedAt:  {}'.format(Dict(video, 'snippet', 'publishedAt' )))
-            episode.thumbs[thumb]           = Proxy.Media(HTTP.Request(thumb).content, sort_order=1);            Log.Info('[ ] thumbnail:    {}'.format(thumb))
+            episode.thumbs[thumb]           = Proxy.Media(picture, sort_order=1);                                Log.Info('[ ] thumbnail:    {}'.format(thumb))
             Log.Info('[ ] channelTitle: {}'.format(Dict(video, 'snippet', 'channelTitle')))
             break
         else:
 
           # videoId not in Playlist/channel item list so loading video_details
-          Log.Info('# videoId not in Playlist/channel item list so loading video_details')
+          
           result = YOUTUBE_REGEX_VIDEO.search(filename)
           if result:
             videoId = result.group('id')
-            Log.Info(videoId)
+            Log.Info('# videoId [{}] not in Playlist/channel item list so loading video_details'.format(videoId))
             try:
 
               url = '{}&id={}&key={}'.format(YOUTUBE_VIDEO_DETAILS, videoId, YOUTUBE_API_KEY)
@@ -377,14 +398,14 @@ def Update(metadata, media, lang, force, movie):
             except Exception as e:  Log('Error: "{}"'.format(e))
             else:
               #Log.Info('[?] link:     "https://www.youtube.com/watch?v={}"'.format(videoId))
-              rating                          = float(10*int(video_details['statistics']['likeCount'])/(int(video_details['statistics']['dislikeCount'])+int(video_details['statistics']['likeCount'])))
               thumb                           = Dict(video_details, 'snippet', 'thumbnails', 'standard', 'url') or Dict(video_details, 'snippet', 'thumbnails', 'high', 'url') or Dict(video_details, 'snippet', 'thumbnails', 'medium', 'url') or Dict(video_details, 'snippet', 'thumbnails', 'default', 'url')
-              poster                          = Dict(video_details, 'snippet', 'thumbnails', 'standard', 'url') or Dict(video_details, 'snippet', 'thumbnails', 'high', 'url') or Dict(video_details, 'snippet', 'thumbnails', 'medium', 'url') or Dict(video_details, 'snippet', 'thumbnails', 'default', 'url')
+              picture                         = HTTP.Request(thumb).content
+              rating                          = float(10*int(video_details['statistics']['likeCount'])/(int(video_details['statistics']['dislikeCount'])+int(video_details['statistics']['likeCount'])))
               episode.title                   = video_details['snippet']['title'];                                                        Log.Info('[ ] title:    "{}"'.format(video_details['snippet']['title']))
               episode.summary                 = video_details['snippet']['description'];                                                  Log.Info('[ ] summary:  "{}"'.format(video_details['snippet']['description'].replace('\n', '. ')))
               episode.originally_available_at = Datetime.ParseDate(video_details['snippet']['publishedAt']).date();                       Log.Info('[ ] date:     "{}"'.format(video_details['snippet']['publishedAt']))
               episode.rating                  = rating;                                                                                   Log.Info('[ ] rating:   "{}"'.format(rating))
-              episode.thumbs[thumb]           = Proxy.Media(HTTP.Request(poster).content, sort_order=1);                                  Log.Info('[ ] thumbs:   "{}"->"{}"'.format(thumb, poster))
+              episode.thumbs[thumb]           = Proxy.Media(picture, sort_order=1);                                  Log.Info('[ ] thumbs:   "{}"'.format(thumb))
               episode.duration                = ISO8601DurationToSeconds(video_details['contentDetails']['duration'])*1000;               Log.Info('[ ] duration: "{}"->"{}"'.format(video_details['contentDetails']['duration'], metadata.duration))
               #videoId = Dict(video, 'contentDetails', 'videoId')
               if Dict(video_details, 'snippet',  'channelTitle') and Dict(video_details, 'snippet',  'channelTitle') not in [role_obj.name for role_obj in episode.directors]:
@@ -393,7 +414,11 @@ def Update(metadata, media, lang, force, movie):
               Log.Info('[ ] director: "{}"'.format(Dict(video_details, 'snippet',  'channelTitle')))
               for id  in Dict(video_details, 'snippet', 'categoryId').split(',') or []:  genre_array[YOUTUBE_CATEGORY_ID[id]] = genre_array[YOUTUBE_CATEGORY_ID[id]]+1 if YOUTUBE_CATEGORY_ID[id] in genre_array else 1
               for tag in Dict(video_details, 'snippet', 'tags')                  or []:  genre_array[tag                    ] = genre_array[tag                    ]+1 if tag                     in genre_array else 1
-
+              if first: 
+                first = False
+                metadata.posters[thumb] = Proxy.Media(picture, sort_order=1)
+                Log.Info('[ ] posters: {}'.format(thumb))
+        
             Log.Info('[ ] genres:   "{}"'.format([x for x in metadata.genres]))  #metadata.genres.clear()
             genre_array_cleansed = [id for id in genre_array if genre_array[id]>episodes/2 and id not in metadata.genres]  #Log.Info('[ ] genre_list: {}'.format(genre_list))
             for id in genre_array_cleansed:  metadata.genres.add(id)
@@ -426,6 +451,7 @@ YOUTUBE_CHANNEL_ITEMS    = YOUTUBE_API_BASE_URL + 'search?order=date&part=snippe
 
 YOUTUBE_REGEX_VIDEO      = Regex('(\\[(youtube-)?|-)(?P<id>[a-z0-9\-_]{11})\\]?',                   Regex.IGNORECASE)
 YOUTUBE_REGEX_PLAYLIST   = Regex('\\[(youtube-)?(?P<id>(PL[a-z0-9]{16}|PL[a-z0-9\-_]{32}|UC[a-z0-9\-_]{22}))\\]',  Regex.IGNORECASE)  #.*\[([Yy]ou[Tt]ube-)?PL[a-z0-9\-_]{11}
+YOUTUBE_REGEX_CHANNEL    = Regex('\\[(youtube-)?(?P<id>UC[a-zA-Z0-9\-]{22})\\]')  #.*\[([Yy]ou[Tt]ube-)?PL[a-z0-9\-_]{11}
 YOUTUBE_CATEGORY_ID      = {  '1': 'Film & Animation'     ,  '2': 'Autos & Vehicles'     , '10': 'Music'                , '15': 'Pets & Animals',
                              '17': 'Sports',                '18': 'Short Movies',          '19': 'Travel & Events',       '20': 'Gaming',
                              '21': 'Videoblogging',         '22': 'People & Blogs',        '23': 'Comedy',                '24': 'Entertainment',
