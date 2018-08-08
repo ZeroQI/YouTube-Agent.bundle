@@ -23,6 +23,8 @@ IDs not used
 import os            # path.abspath, join, dirname
 import re            #
 import inspect       # getfile, currentframe
+import urllib2
+from lxml import etree
 from io import open  #
 
 ### Return dict value if all fields exists "" otherwise (to allow .isdigit()), avoid key errors
