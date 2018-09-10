@@ -404,6 +404,7 @@ def Update(metadata, media, lang, force, movie):
               episode.originally_available_at = Datetime.ParseDate(video_details['snippet']['publishedAt']).date();                       Log.Info('[ ] date:     "{}"'.format(video_details['snippet']['publishedAt']))
               episode.rating                  = rating;                                                                                   Log.Info('[ ] rating:   "{}"'.format(rating))
               episode.thumbs[thumb]           = Proxy.Media(picture, sort_order=1);                                  Log.Info('[ ] thumbs:   "{}"'.format(thumb))
+              episode.thumbs.validate_keys([thumb])
               episode.duration                = ISO8601DurationToSeconds(video_details['contentDetails']['duration'])*1000;               Log.Info('[ ] duration: "{}"->"{}"'.format(video_details['contentDetails']['duration'], metadata.duration))
               #videoId = Dict(video, 'contentDetails', 'videoId')
               if Dict(video_details, 'snippet',  'channelTitle') and Dict(video_details, 'snippet',  'channelTitle') not in [role_obj.name for role_obj in episode.directors]:
@@ -416,7 +417,6 @@ def Update(metadata, media, lang, force, movie):
                 first = False
                 metadata.posters[thumb] = Proxy.Media(picture, sort_order=1)
                 Log.Info('[ ] posters: {}'.format(thumb))
-                metadata.posters.validate_keys([thumb])
                 
             Log.Info('[ ] genres:   "{}"'.format([x for x in metadata.genres]))  #metadata.genres.clear()
             genre_array_cleansed = [id for id in genre_array if genre_array[id]>episodes/2 and id not in metadata.genres]  #Log.Info('[ ] genre_list: {}'.format(genre_list))
