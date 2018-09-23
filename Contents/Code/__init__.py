@@ -73,7 +73,7 @@ def GetLibraryRootPath(dir):
     filename = os.path.join(CachePath, '_Logs', '_root_.scanner.log')
     if os.path.isfile(filename):
       Log.Info('[!] ASS root scanner file present: "{}"'.format(filename))
-      with open(filename, 'r') as file:  line=file.read()
+      line = Core.storage.load(filename)  #with open(filename, 'rb') as file:  line=file.read()
       for root in [os.sep.join(dir.split(os.sep)[0:x+2]) for x in range(dir.count(os.sep)-1, -1, -1)]:
         if "root: '{}'".format(root) in line:  path = os.path.relpath(dir, root).rstrip('.');  break  #Log.Info('[!] root not found: "{}"'.format(root))
       else: path, root = '_unknown_folder', ''
