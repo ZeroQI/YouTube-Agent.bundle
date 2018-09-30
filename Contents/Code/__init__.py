@@ -279,7 +279,7 @@ def Update(metadata, media, lang, force, movie):
       else:
         Log.Info('[?] json_playlist_details: {}'.format(json_playlist_details.keys()))
         channel_id       = Dict(json_playlist_details, 'snippet', 'channelId');  Log.Info('[ ] channel_id: "{}"'.format(channel_id))
-        metadata.title   = Dict(json_playlist_details, 'snippet', 'title'    );  Log.Info('[ ] title:      "{}"'.format(metadata.title))
+        metadata.title   = filterInvalidXMLChars(Dict(json_playlist_details, 'snippet', 'title'    ));  Log.Info('[ ] title:      "{}"'.format(metadata.title))
         if Dict(json_playlist_details, 'snippet', 'description'):  metadata.summary = Dict(json_playlist_details, 'snippet', 'description');
         Log.Info('[ ] summary:     "{}"'.format((Dict(json_playlist_details, 'snippet', 'description') or '').replace('\n', '. ')))  #
         metadata.originally_available_at = Datetime.ParseDate(Dict(json_playlist_details, 'snippet', 'publishedAt')).date();  Log.Info('[ ] publishedAt:  {}'.format(Dict(json_playlist_details, 'snippet', 'publishedAt' )))
@@ -299,7 +299,7 @@ def Update(metadata, media, lang, force, movie):
     else:  Log.Info('after')
 
     # Loading Channel Details for summary, country, background and role image
-    if channel_id.startswith('UC') or channel_id.startswith('UC'):
+    if channel_id.startswith('UC') or channel_id.startswith('HC'):
       try:
 
         URL_CHANNEL_DETAILS   = '{}&id={}&key={}'.format(YOUTUBE_CHANNEL_DETAILS,channel_id, YOUTUBE_API_KEY)
@@ -316,15 +316,15 @@ def Update(metadata, media, lang, force, movie):
             summary  = 'Channel with {} videos, '.format(Dict(json_channel_details, 'statistics', 'videoCount'     ))
             summary += '{} subscribers, '.format(Dict(json_channel_details, 'statistics', 'subscriberCount'))
             summary += '{} views'.format(Dict(json_channel_details, 'statistics', 'viewCount'      ))
-            metadata.summary = summary  #metadata.summary = 'No Channel summary'
+            metadata.summary = filterInvalidXMLChars(summary) #or 'No Channel summary'
             Log.Info('[ ] summary:     "{}"'.format(Dict(json_channel_details, 'snippet', 'description').replace('\n', '. ')))  #
         if Dict(json_channel_details,'snippet','country') and Dict(json_channel_details,'snippet','country') not in metadata.countries:
           metadata.countries.add(Dict(json_channel_details,'snippet','country'));  Log.Info('[ ] country: {}'.format(Dict(json_channel_details,'snippet','country') ))
         thumb_channel = Dict(json_channel_details, 'snippet', 'thumbnails', 'medium', 'url') or Dict(json_channel_details, 'snippet', 'thumbnails', 'high', 'url')   or Dict(json_channel_details, 'snippet', 'thumbnails', 'default', 'url')
         metadata.roles.clear()
         role       = metadata.roles.new()
-        role.role  = Dict(json_channel_details, 'snippet', 'title')
-        role.name  = Dict(json_channel_details, 'snippet', 'title')
+        role.role  = filterInvalidXMLChars(Dict(json_channel_details, 'snippet', 'title'))
+        role.name  = filterInvalidXMLChars(Dict(json_channel_details, 'snippet', 'title'))
         role.photo = thumb_channel
         Log.Info('[ ] role:        {}'.format(Dict(json_channel_details,'snippet','title')))
         thumb = Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvLowImageUrl' ) or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvMediumImageUrl') \
@@ -341,20 +341,8 @@ def Update(metadata, media, lang, force, movie):
           #metadata.posters.validate_keys([thumb_channel])
         else:                                                        Log('[ ] posters:   {}'.format(thumb_channel))
 
-    # Loading Channel
-    #if guid.startswith('UC'):
-    #  try:
-
-    #    URL_CHANNEL_ITEMS = '{}&channelId={}&key={}'.format(YOUTUBE_CHANNEL_ITEMS, guid, YOUTUBE_API_KEY)
-    #    json_channel_items  = json_load(URL_CHANNEL_ITEMS)
-
-    #  except Exception as e:  Log('exception: {}, url: {}'.format(e, guid))
-    #  else:
-    #    Log.Info('json_channel_items: {}'.format(len(Dict(json_channel_items, 'items'))))
-    #    thumb                            = Dict(json_channel_items, 'snippet', 'thumbnails', 'standard', 'url') or Dict(json_channel_items, 'snippet', 'thumbnails', 'high', 'url') or Dict(json_channel_items, 'snippet', 'thumbnails', 'medium', 'url') or Dict(json_channel_items, 'snippet', 'thumbnails', 'default', 'url')
-    #    if not Dict(json_playlist_details, 'snippet', 'publishedAt'):  metadata.originally_available_at = Datetime.ParseDate(Dict(json_channel_items, 'snippet', 'publishedAt')).date();  Log.Info('[ ] publishedAt:  {}'.format(Dict(json_channel_items, 'snippet', 'publishedAt' )))
-     #   if thumb:                                                      metadata.posters[thumb]          = Proxy.Media(HTTP.Request( thumb ).content, sort_order=1);         Log.Info('[ ] thumb:       '+ thumb)
-
+        #if not Dict(json_playlist_details, 'snippet', 'publishedAt'):  metadata.originally_available_at = Datetime.ParseDate(Dict(json_channel_items, 'snippet', 'publishedAt')).date();  Log.Info('[ ] publishedAt:  {}'.format(Dict(json_channel_items, 'snippet', 'publishedAt' )))
+    
     ### Season + Episode loop ###
     genre_array = {}
     episodes    = 0
@@ -380,8 +368,8 @@ def Update(metadata, media, lang, force, movie):
             # videoId not in Playlist/channel
             thumb                           = Dict(video, 'snippet', 'thumbnails', 'standard', 'url') or Dict(video, 'snippet', 'thumbnails', 'high', 'url') or Dict(video, 'snippet', 'thumbnails', 'medium', 'url') or Dict(video, 'snippet', 'thumbnails', 'default', 'url')
             picture                         = HTTP.Request(thumb).content 
-            episode.title                   = Dict(video, 'snippet', 'title'       );                            Log.Info('[ ] title:        {}'.format(Dict(video, 'snippet', 'title'       )))
-            episode.summary                 = Dict(video, 'snippet', 'description' );                            Log.Info('[ ] description:  {}'.format(Dict(video, 'snippet', 'description' ).replace('\n', '. ')))
+            episode.title                   = filterInvalidXMLChars(Dict(video, 'snippet', 'title'       ));     Log.Info('[ ] title:        {}'.format(Dict(video, 'snippet', 'title'       )))
+            episode.summary                 = filterInvalidXMLChars(Dict(video, 'snippet', 'description' ));     Log.Info('[ ] description:  {}'.format(Dict(video, 'snippet', 'description' ).replace('\n', '. ')))
             episode.originally_available_at = Datetime.ParseDate(Dict(video, 'snippet', 'publishedAt')).date();  Log.Info('[ ] publishedAt:  {}'.format(Dict(video, 'snippet', 'publishedAt' )))
             episode.thumbs[thumb]           = Proxy.Media(picture, sort_order=1);                                Log.Info('[ ] thumbnail:    {}'.format(thumb))
             Log.Info('[ ] channelTitle: {}'.format(Dict(video, 'snippet', 'channelTitle')))
@@ -406,8 +394,8 @@ def Update(metadata, media, lang, force, movie):
               picture                         = HTTP.Request(thumb).content
               if Dict(video_details, 'statistics', 'likeCount'):
                 rating                          = float(10*int(video_details['statistics']['likeCount'])/(int(video_details['statistics']['dislikeCount'])+int(video_details['statistics']['likeCount'])))
-              episode.title                   = video_details['snippet']['title'];                                                        Log.Info('[ ] title:    "{}"'.format(video_details['snippet']['title']))
-              episode.summary                 = video_details['snippet']['description'];                                                  Log.Info('[ ] summary:  "{}"'.format(video_details['snippet']['description'].replace('\n', '. ')))
+              episode.title                   = filterInvalidXMLChars(video_details['snippet']['title']);                                 Log.Info('[ ] title:    "{}"'.format(video_details['snippet']['title']))
+              episode.summary                 = filterInvalidXMLChars(video_details['snippet']['description']);                           Log.Info('[ ] summary:  "{}"'.format(video_details['snippet']['description'].replace('\n', '. ')))
               episode.originally_available_at = Datetime.ParseDate(video_details['snippet']['publishedAt']).date();                       Log.Info('[ ] date:     "{}"'.format(video_details['snippet']['publishedAt']))
               episode.rating                  = rating;                                                                                   Log.Info('[ ] rating:   "{}"'.format(rating))
               episode.thumbs[thumb]           = Proxy.Media(picture, sort_order=1);                                  Log.Info('[ ] thumbs:   "{}"'.format(thumb))
@@ -416,7 +404,7 @@ def Update(metadata, media, lang, force, movie):
               #videoId = Dict(video, 'contentDetails', 'videoId')
               if Dict(video_details, 'snippet',  'channelTitle') and Dict(video_details, 'snippet',  'channelTitle') not in [role_obj.name for role_obj in episode.directors]:
                 meta_director       = episode.directors.new()
-                meta_director.name  = Dict(video_details, 'snippet',  'channelTitle')
+                meta_director.name  = filterInvalidXMLChars(Dict(video_details, 'snippet',  'channelTitle'))
               Log.Info('[ ] director: "{}"'.format(Dict(video_details, 'snippet',  'channelTitle')))
               for id  in Dict(video_details, 'snippet', 'categoryId').split(',') or []:  genre_array[YOUTUBE_CATEGORY_ID[id]] = genre_array[YOUTUBE_CATEGORY_ID[id]]+1 if YOUTUBE_CATEGORY_ID[id] in genre_array else 1
               for tag in Dict(video_details, 'snippet', 'tags')                  or []:  genre_array[tag                    ] = genre_array[tag                    ]+1 if tag                     in genre_array else 1
