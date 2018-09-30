@@ -85,7 +85,7 @@ def json_load(url):
   iteration = 0
   json_page = {}
   json      = {}
-  while not json or Dict(json_page, 'nextPageToken') and Dict(json_page, 'pageInfo', 'resultsPerPage') !=1 and iteration<20:
+  while not json or Dict(json_page, 'nextPageToken') and Dict(json_page, 'pageInfo', 'resultsPerPage') !=1 and iteration<50:
     #Log.Info('{}'.format(Dict(json_page, 'pageInfo', 'resultsPerPage')))
     try:
       json_page = JSON.ObjectFromURL(url+'&pageToken='+Dict(json_page, 'nextPageToken') if Dict(json_page, 'nextPageToken') else url)
