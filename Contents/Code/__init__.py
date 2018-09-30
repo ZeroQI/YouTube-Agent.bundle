@@ -176,7 +176,7 @@ def Update(metadata, media, lang, force, movie):
   season_map      = {}
   channelId       = None
   
-  if not guid.startswith('PL'):  metadata.title = re.sub(r'\[.*\]', '', dir).strip()  #no id mode, update title so ep gets updated
+  if not (len(guid)>2 and guid[0:2] in ('PL', 'UU', 'FL', 'LP', 'RD')):  metadata.title = re.sub(r'\[.*\]', '', dir).strip()  #no id mode, update title so ep gets updated
 
   ### Movie library and video tag ###
   Log(''.ljust(157, '='))
@@ -184,7 +184,7 @@ def Update(metadata, media, lang, force, movie):
   if movie:
 
     # YouTube video id given
-    if guid and not guid.startswith('PL'):
+    if guid and not not (len(guid)>2 and guid[0:2] in ('PL', 'UU', 'FL', 'LP', 'RD')):
       try:
 
         URL_VIDEO_DETAILS = '{}&id={}&key={}'.format(YOUTUBE_VIDEO_DETAILS, guid, YOUTUBE_API_KEY)
@@ -258,7 +258,7 @@ def Update(metadata, media, lang, force, movie):
       else:  Log.Info("Grouping folder not found or single folder, root: {}, path: {}, Grouping folder: {}, subdirs: {}, reverse_path: {}".format(root, path, os.path.basename(series_root_folder), subfolder_count, reverse_path))
 
     #
-    channel_id            = guid if guid.startswith('UC') else ''
+    channel_id            = guid if guid.startswith('UC') or guid.startswith('HC') else ''
     json                  = {}
     json_playlist_details = {}
     json_playlist_items   = {}
@@ -267,7 +267,7 @@ def Update(metadata, media, lang, force, movie):
     metadata.studio       = 'YouTube'
     
     # Loading Playlist
-    if guid.startswith('PL'):
+    if len(guid)>2 and guid[0:2] in ('PL', 'UU', 'FL', 'LP', 'RD'):
 
       Log.Info('[?] json_playlist_details')
       try:
@@ -299,7 +299,7 @@ def Update(metadata, media, lang, force, movie):
     else:  Log.Info('after')
 
     # Loading Channel Details for summary, country, background and role image
-    if channel_id.startswith('UC'):
+    if channel_id.startswith('UC') or channel_id.startswith('UC'):
       try:
 
         URL_CHANNEL_DETAILS   = '{}&id={}&key={}'.format(YOUTUBE_CHANNEL_DETAILS,channel_id, YOUTUBE_API_KEY)
@@ -449,8 +449,8 @@ YOUTUBE_CHANNEL_DETAILS  = YOUTUBE_API_BASE_URL + 'channels?part=snippet%2Cconte
 YOUTUBE_CHANNEL_ITEMS    = YOUTUBE_API_BASE_URL + 'search?order=date&part=snippet&type=video&maxResults=50'                  # &channelId=string     &key=apikey
 
 YOUTUBE_REGEX_VIDEO      = Regex('(\\[(youtube-)?|-)(?P<id>[a-z0-9\-_]{11})\\]?',                   Regex.IGNORECASE)
-YOUTUBE_REGEX_PLAYLIST   = Regex('\\[(youtube-)?(?P<id>(PL[a-z0-9]{16}|PL[a-z0-9\-_]{32}|UC[a-z0-9\-_]{22}))\\]',  Regex.IGNORECASE)  #.*\[([Yy]ou[Tt]ube-)?PL[a-z0-9\-_]{11}
-YOUTUBE_REGEX_CHANNEL    = Regex('\\[(youtube-)?(?P<id>UC[a-zA-Z0-9\-]{22})\\]')  #.*\[([Yy]ou[Tt]ube-)?PL[a-z0-9\-_]{11}
+YOUTUBE_REGEX_PLAYLIST   = Regex('\\[(youtube-)?(?P<id>(PL[^\[\]]{16}|PL[^\[\]]{32}|UU[^\[\]]{22}|FL[^\[\]]{22}|LP[^\[\]]{22}|RD[^\[\]]{22}|UC[^\[\]]{22}|HC[^\[\]]{22}))\\]',  Regex.IGNORECASE)  #.*\[([Yy]ou[Tt]ube-)?PL[a-z0-9\-_]{11}
+YOUTUBE_REGEX_CHANNEL    = Regex('\\[(youtube-)?(?P<id>UC[a-zA-Z0-9\-]{22}|HC[a-zA-Z0-9\-]{22})\\]')  #.*\[([Yy]ou[Tt]ube-)?PL[a-z0-9\-_]{11}
 YOUTUBE_CATEGORY_ID      = {  '1': 'Film & Animation'     ,  '2': 'Autos & Vehicles'     , '10': 'Music'                , '15': 'Pets & Animals',
                              '17': 'Sports',                '18': 'Short Movies',          '19': 'Travel & Events',       '20': 'Gaming',
                              '21': 'Videoblogging',         '22': 'People & Blogs',        '23': 'Comedy',                '24': 'Entertainment',
