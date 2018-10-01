@@ -109,7 +109,7 @@ def Search(results, media, lang, manual, movie):
 
   YOUTUBE_API_KEY   = Prefs['YouTube-Agent_youtube_api_key']
 
-  filename = media.title if movie else media.show #os.path.splitext(os.path.basename(media.filename))[0]
+  filename = os.path.basename(media.items[0].parts[0].file) if movie else media.show #os.path.splitext(os.path.basename(media.filename))[0]
   dir      = GetMediaDir(media, movie)
   Log(''.ljust(157, '='))
   Log('search() - dir: {}, filename: {}'.format(dir, filename))
@@ -129,6 +129,7 @@ def Search(results, media, lang, manual, movie):
   if not guid:
     Log.Info('no guid found')
     if movie:
+      Log.Info(filename)
       dir = os.path.dirname(filename)
     else:    
       s = media.seasons.keys()[0] if media.seasons.keys()[0]!='0' else media.seasons.keys()[1] if len(media.seasons.keys()) >1 else None
@@ -163,7 +164,7 @@ def Search(results, media, lang, manual, movie):
       dir                 = GetMediaDir(media, movie)
       library, root, path = GetLibraryRootPath(dir)
       Log('Putting folder name "{}" as guid since no assign channel id or playlist id was assigned'.format(path.split(os.sep)[-1]))
-      results.Append( MetadataSearchResult( id='youtube|{}|{}'.format(path.split(os.sep)[-2] if os.sep in path else '', dir), name=filename, year=None, score=80, lang=lang ) )
+      results.Append( MetadataSearchResult( id='youtube|{}|{}'.format(path.split(os.sep)[-2] if os.sep in path else '', dir), name=os.path.basename(filename), year=None, score=80, lang=lang ) )
     Log(''.ljust(157, '='))
   Log(''.ljust(157, '='))
 
@@ -184,15 +185,16 @@ def Update(metadata, media, lang, force, movie):
   if movie:
 
     # YouTube video id given
-    if guid and not not (len(guid)>2 and guid[0:2] in ('PL', 'UU', 'FL', 'LP', 'RD')):
+    if guid and not (len(guid)>2 and guid[0:2] in ('PL', 'UU', 'FL', 'LP', 'RD')):
       try:
 
         URL_VIDEO_DETAILS = '{}&id={}&key={}'.format(YOUTUBE_VIDEO_DETAILS, guid, YOUTUBE_API_KEY)
         video_details = json_load(URL_VIDEO_DETAILS)['items'][0]
 
-      except:  Log('video_details - Could not retrieve data from YouTube for: %s' % guid)
+      except:  Log('video_details - Could not retrieve data from YouTube for: '+guid)
       else:
-        Log('video_details - Loaded video details from: "{}"'.format(YOUTUBE_VIDEO_DETAILS % (guid)))
+        Log.Info('Movie mode3')
+        Log('video_details - Loaded video details from: "{}"'.format(YOUTUBE_VIDEO_DETAILS))
         date                             = Datetime.ParseDate(video_details['snippet']['publishedAt']);  Log('date:  "{}"'.format(date))
         metadata.originally_available_at = date.date()
         metadata.title                   = video_details['snippet']['title'];                                           Log('series title:       "{}"'.format(video_details['snippet']['title']))
@@ -279,7 +281,7 @@ def Update(metadata, media, lang, force, movie):
       else:
         Log.Info('[?] json_playlist_details: {}'.format(json_playlist_details.keys()))
         channel_id       = Dict(json_playlist_details, 'snippet', 'channelId');  Log.Info('[ ] channel_id: "{}"'.format(channel_id))
-        metadata.title   = filterInvalidXMLChars(Dict(json_playlist_details, 'snippet', 'title'    ));  Log.Info('[ ] title:      "{}"'.format(metadata.title))
+        metadata.title   = filterInvalidXMLChars(Dict(json_playlist_details, 'snippet', 'title'));  Log.Info('[ ] title:      "{}"'.format(metadata.title))
         if Dict(json_playlist_details, 'snippet', 'description'):  metadata.summary = Dict(json_playlist_details, 'snippet', 'description');
         Log.Info('[ ] summary:     "{}"'.format((Dict(json_playlist_details, 'snippet', 'description') or '').replace('\n', '. ')))  #
         metadata.originally_available_at = Datetime.ParseDate(Dict(json_playlist_details, 'snippet', 'publishedAt')).date();  Log.Info('[ ] publishedAt:  {}'.format(Dict(json_playlist_details, 'snippet', 'publishedAt' )))
