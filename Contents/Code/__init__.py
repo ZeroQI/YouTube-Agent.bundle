@@ -130,12 +130,10 @@ def Search(results, media, lang, manual, movie):
     Log.Info('no guid found')
     if movie:
       Log.Info(filename)
-      dir = os.path.dirname(filename)
     else:    
       s = media.seasons.keys()[0] if media.seasons.keys()[0]!='0' else media.seasons.keys()[1] if len(media.seasons.keys()) >1 else None
       if s:
-        e          = media.seasons[s].episodes.keys()[0]
-        dir        = os.path.dirname(media.seasons[s].episodes[e].items[0].parts[0].file)
+        e      = media.seasons[s].episodes.keys()[0]
         result = YOUTUBE_REGEX_PLAYLIST.search(os.path.basename(os.path.dirname(dir)))
         guid   = result.group('id') if result else ''
         if result or os.path.exists(os.path.join(dir, 'youtube.id')):
@@ -144,8 +142,8 @@ def Search(results, media, lang, manual, movie):
           Log(''.ljust(157, '='))
           return
         Log('search() - id not found')
+    
     try:
-
       URL_VIDEO_SEARCH = '{}&q={}&key={}'.format(YOUTUBE_VIDEO_SEARCH, String.Quote(filename, usePlus=False), YOUTUBE_API_KEY)
       video_details = json_load(URL_VIDEO_SEARCH)
 
@@ -161,7 +159,6 @@ def Search(results, media, lang, manual, movie):
 
     ###
     if not results:
-      dir                 = GetMediaDir(media, movie)
       library, root, path = GetLibraryRootPath(dir)
       Log('Putting folder name "{}" as guid since no assign channel id or playlist id was assigned'.format(path.split(os.sep)[-1]))
       results.Append( MetadataSearchResult( id='youtube|{}|{}'.format(path.split(os.sep)[-2] if os.sep in path else '', dir), name=os.path.basename(filename), year=None, score=80, lang=lang ) )
