@@ -20,12 +20,12 @@ IDs not used
 '''
 
 ### Imports ###
-import os            # path.abspath, join, dirname
-import re            #
-import inspect       # getfile, currentframe
-import urllib2
-from lxml import etree
-from io import open  #
+import os                   # path.abspath, join, dirname
+import re                   #
+import inspect              # getfile, currentframe
+import urllib2              #
+from   lxml    import etree #
+from   io      import open  #
 
 ### Return dict value if all fields exists "" otherwise (to allow .isdigit()), avoid key errors
 def Dict(var, *arg, **kwarg):  #Avoid TypeError: argument of type 'NoneType' is not iterable
@@ -283,7 +283,7 @@ def Update(metadata, media, lang, force, movie):
         Log.Info('[ ] summary:     "{}"'.format((Dict(json_playlist_details, 'snippet', 'description') or '').replace('\n', '. ')))  #
         metadata.originally_available_at = Datetime.ParseDate(Dict(json_playlist_details, 'snippet', 'publishedAt')).date();  Log.Info('[ ] publishedAt:  {}'.format(Dict(json_playlist_details, 'snippet', 'publishedAt' )))
         thumb            = Dict(json_playlist_details, 'snippet', 'thumbnails', 'standard', 'url') or Dict(json_playlist_details, 'snippet', 'thumbnails', 'high', 'url') or Dict(json_playlist_details, 'snippet', 'thumbnails', 'medium', 'url') or Dict(json_playlist_details, 'snippet', 'thumbnails', 'default', 'url')
-        if thumb and thumb not in metadata.posters:  Log('[ ] posters:   {}'.format(thumb));  metadata.posters [thumb] = Proxy.Media(HTTP.Request(thumb).content, sort_order=2)
+        if thumb and thumb not in metadata.posters:  Log('[ ] posters:   {}'.format(thumb));  metadata.posters [thumb] = Proxy.Media(HTTP.Request(thumb).content, sort_order=1 if Prefs['media_poster_source']=='Episode' else 2)
         else:                                        Log('[X] posters:   {}'.format(thumb))
 
       Log.Info('[?] json_playlist_items')
@@ -336,7 +336,7 @@ def Update(metadata, media, lang, force, movie):
 
         if thumb_channel and thumb_channel not in metadata.posters:
           Log('[X] posters:   {}'.format(thumb_channel))
-          metadata.posters [thumb_channel] = Proxy.Media(HTTP.Request(thumb_channel).content, sort_order=1)
+          metadata.posters [thumb_channel] = Proxy.Media(HTTP.Request(thumb_channel).content, sort_order=1 if Prefs['media_poster_source']=='Channel' else 2)
           #metadata.posters.validate_keys([thumb_channel])
         else:                                                        Log('[ ] posters:   {}'.format(thumb_channel))
 
