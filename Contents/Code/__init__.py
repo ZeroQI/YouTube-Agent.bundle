@@ -108,8 +108,8 @@ def Start():
 def Search(results, media, lang, manual, movie):
 
   YOUTUBE_API_KEY   = Prefs['YouTube-Agent_youtube_api_key']
-
-  filename = os.path.basename(media.items[0].parts[0].file) if movie else media.show #os.path.splitext(os.path.basename(media.filename))[0]
+  displayname = os.path.basename(media.items[0].parts[0].file) if movie else media.show
+  filename = os.path.basename(media.items[0].parts[0].file) if movie else os.path.splitext(os.path.basename(media.filename))[0]
   dir      = GetMediaDir(media, movie)
   Log(''.ljust(157, '='))
   Log('search() - dir: {}, filename: {}'.format(dir, filename))
@@ -121,7 +121,7 @@ def Search(results, media, lang, manual, movie):
       if result:
         guid = result.group('id')
         Log.Info('search() - YouTube ID found - regex: {}, youtube ID: "{}"'.format(regex, guid))
-        results.Append( MetadataSearchResult( id='youtube|{}|{}'.format(guid,os.path.basename(dir)),  name=filename, year=None, score=100, lang=lang ) )
+        results.Append( MetadataSearchResult( id='youtube|{}|{}'.format(guid,os.path.basename(dir)), name=displayname, year=None, score=100, lang=lang ) )
         return
       else: Log.Info('search() - YouTube ID not found - regex: "{}"'.format(regex))  
     else:        guid = None
