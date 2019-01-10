@@ -200,7 +200,7 @@ def Update(metadata, media, lang, force, movie):
         poster                           = video_details['snippet']['thumbnails']['standard']['url'];                   Log('poster: "{}"'.format(thumb))
         metadata.posters[thumb]          = Proxy.Media(HTTP.Request(poster).content, sort_order=1)
         metadata.duration                = ISO8601DurationToSeconds(video_details['contentDetails']['duration'])*1000;  Log('series duration:    "{}"->"{}"'.format(video_details['contentDetails']['duration'], metadata.duration))
-        if Dict(video_details, 'statistics', 'likeCount'):
+        if Dict(video_details, 'statistics', 'likeCount') and int(video_details['statistics']['likeCount']) > 0:
           metadata.rating                  = float(10*int(video_details['statistics']['likeCount'])/(int(video_details['statistics']['dislikeCount'])+int(video_details['statistics']['likeCount'])));  Log('rating: {}'.format(metadata.rating))
         metadata.genres                  = [ YOUTUBE_CATEGORY_ID[id] for id in video_details['snippet']['categoryId'].split(',') ];  Log('genres: '+str([x for x in metadata.genres]))
         metadata.year                    = date.year  #test avoid:  AttributeError: 'TV_Show' object has no attribute named 'year'
@@ -391,12 +391,11 @@ def Update(metadata, media, lang, force, movie):
               #Log.Info('[?] link:     "https://www.youtube.com/watch?v={}"'.format(videoId))
               thumb                           = Dict(video_details, 'snippet', 'thumbnails', 'standard', 'url') or Dict(video_details, 'snippet', 'thumbnails', 'high', 'url') or Dict(video_details, 'snippet', 'thumbnails', 'medium', 'url') or Dict(video_details, 'snippet', 'thumbnails', 'default', 'url')
               picture                         = HTTP.Request(thumb).content
-              if Dict(video_details, 'statistics', 'likeCount'):
-                rating                          = float(10*int(video_details['statistics']['likeCount'])/(int(video_details['statistics']['dislikeCount'])+int(video_details['statistics']['likeCount'])))
               episode.title                   = filterInvalidXMLChars(video_details['snippet']['title']);                                 Log.Info('[ ] title:    "{}"'.format(video_details['snippet']['title']))
               episode.summary                 = filterInvalidXMLChars(video_details['snippet']['description']);                           Log.Info('[ ] summary:  "{}"'.format(video_details['snippet']['description'].replace('\n', '. ')))
               episode.originally_available_at = Datetime.ParseDate(video_details['snippet']['publishedAt']).date();                       Log.Info('[ ] date:     "{}"'.format(video_details['snippet']['publishedAt']))
-              episode.rating                  = rating;                                                                                   Log.Info('[ ] rating:   "{}"'.format(rating))
+              if Dict(video_details, 'statistics', 'likeCount') and int(video_details['statistics']['likeCount']) > 0:
+                episode.rating                = float(10*int(video_details['statistics']['likeCount'])/(int(video_details['statistics']['dislikeCount'])+int(video_details['statistics']['likeCount'])));  Log('[ ] rating:   "{}"'.format(episode.rating))
               episode.thumbs[thumb]           = Proxy.Media(picture, sort_order=1);                                  Log.Info('[ ] thumbs:   "{}"'.format(thumb))
               episode.thumbs.validate_keys([thumb])
               episode.duration                = ISO8601DurationToSeconds(video_details['contentDetails']['duration'])*1000;               Log.Info('[ ] duration: "{}"->"{}"'.format(video_details['contentDetails']['duration'], metadata.duration))
