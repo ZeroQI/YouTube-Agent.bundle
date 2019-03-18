@@ -264,6 +264,57 @@ def Update(metadata, media, lang, force, movie):
     json_channel_items    = {}
     json_channel_details  = {}
     metadata.studio       = 'YouTube'
+
+
+    if os.path.exists(os.path.join(dir, 'youtube.id')):
+      with open(os.path.join(dir, 'youtube.id')) as f:
+        metadata.roles.clear()
+        for line in f.readlines():
+          try:
+
+            URL_CHANNEL_DETAILS   = '{}&id={}&key={}'.format(YOUTUBE_CHANNEL_DETAILS,line.rstrip(), YOUTUBE_API_KEY)
+            json_channel_details  = json_load(URL_CHANNEL_DETAILS)['items'][0]
+
+          except Exception as e:  Log('exception: {}, url: {}'.format(e, guid))
+          else:
+            Log.Info('[?] json_channel_details: {}'.format(json_channel_details.keys()))
+            Log.Info('[ ] title:       "{}"'.format(Dict(json_channel_details, 'snippet', 'title'      )))
+            if not Dict(json_playlist_details, 'snippet', 'description'):
+              if Dict(json_channel_details, 'snippet', 'description'):  metadata.summary =  Dict(json_channel_details, 'snippet', 'description');
+              #elif guid.startswith('PL'):  metadata.summary = 'No Playlist nor Channel summary'
+              else:
+                summary  = 'Channel with {} videos, '.format(Dict(json_channel_details, 'statistics', 'videoCount'     ))
+                summary += '{} subscribers, '.format(Dict(json_channel_details, 'statistics', 'subscriberCount'))
+                summary += '{} views'.format(Dict(json_channel_details, 'statistics', 'viewCount'      ))
+                metadata.summary = filterInvalidXMLChars(summary) #or 'No Channel summary'
+                Log.Info('[ ] summary:     "{}"'.format(Dict(json_channel_details, 'snippet', 'description').replace('\n', '. ')))  #
+            if Dict(json_channel_details,'snippet','country') and Dict(json_channel_details,'snippet','country') not in metadata.countries:
+              metadata.countries.add(Dict(json_channel_details,'snippet','country'));  Log.Info('[ ] country: {}'.format(Dict(json_channel_details,'snippet','country') ))
+            thumb_channel = Dict(json_channel_details, 'snippet', 'thumbnails', 'medium', 'url') or Dict(json_channel_details, 'snippet', 'thumbnails', 'high', 'url')   or Dict(json_channel_details, 'snippet', 'thumbnails', 'default', 'url')
+            role       = metadata.roles.new()
+            role.role  = filterInvalidXMLChars(Dict(json_channel_details, 'snippet', 'title'))
+            role.name  = filterInvalidXMLChars(Dict(json_channel_details, 'snippet', 'title'))
+            role.photo = thumb_channel
+            Log.Info('[ ] role:        {}'.format(Dict(json_channel_details,'snippet','title')))
+            thumb = Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvLowImageUrl' ) or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvMediumImageUrl') \
+                 or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvHighImageUrl') or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvImageUrl'      )
+            if thumb and thumb not in metadata.art:  Log('[X] art:       {}'.format(thumb));  metadata.art [thumb] = Proxy.Media(HTTP.Request(thumb).content, sort_order=1)
+            else:                                    Log('[ ] art:       {}'.format(thumb))
+
+            if thumb and thumb not in metadata.banners:  Log('[X] banners:   {}'.format(thumb));  metadata.banners [thumb] = Proxy.Media(HTTP.Request(thumb).content, sort_order=1)
+            else:                                        Log('[ ] banners:   {}'.format(thumb))
+
+            if thumb_channel and thumb_channel not in metadata.posters:
+              Log('[X] posters:   {}'.format(thumb_channel))
+              metadata.posters [thumb_channel] = Proxy.Media(HTTP.Request(thumb_channel).content, sort_order=1 if Prefs['media_poster_source']=='Channel' else 2)
+              #metadata.posters.validate_keys([thumb_channel])
+            else:                                                        Log('[ ] posters:   {}'.format(thumb_channel))
+
+            #if not Dict(json_playlist_details, 'snippet', 'publishedAt'):  metadata.originally_available_at = Datetime.ParseDate(Dict(json_channel_items, 'snippet', 'publishedAt')).date();  Log.Info('[ ] publishedAt:  {}'.format(Dict(json_channel_items, 'snippet', 'publishedAt' )))
+        
+
+
+
     
     # Loading Playlist
     if len(guid)>2 and guid[0:2] in ('PL', 'UU', 'FL', 'LP', 'RD'):
@@ -319,29 +370,31 @@ def Update(metadata, media, lang, force, movie):
             Log.Info('[ ] summary:     "{}"'.format(Dict(json_channel_details, 'snippet', 'description').replace('\n', '. ')))  #
         if Dict(json_channel_details,'snippet','country') and Dict(json_channel_details,'snippet','country') not in metadata.countries:
           metadata.countries.add(Dict(json_channel_details,'snippet','country'));  Log.Info('[ ] country: {}'.format(Dict(json_channel_details,'snippet','country') ))
-        thumb_channel = Dict(json_channel_details, 'snippet', 'thumbnails', 'medium', 'url') or Dict(json_channel_details, 'snippet', 'thumbnails', 'high', 'url')   or Dict(json_channel_details, 'snippet', 'thumbnails', 'default', 'url')
-        metadata.roles.clear()
-        role       = metadata.roles.new()
-        role.role  = filterInvalidXMLChars(Dict(json_channel_details, 'snippet', 'title'))
-        role.name  = filterInvalidXMLChars(Dict(json_channel_details, 'snippet', 'title'))
-        role.photo = thumb_channel
-        Log.Info('[ ] role:        {}'.format(Dict(json_channel_details,'snippet','title')))
-        thumb = Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvLowImageUrl' ) or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvMediumImageUrl') \
-             or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvHighImageUrl') or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvImageUrl'      )
-        if thumb and thumb not in metadata.art:  Log('[X] art:       {}'.format(thumb));  metadata.art [thumb] = Proxy.Media(HTTP.Request(thumb).content, sort_order=1)
-        else:                                    Log('[ ] art:       {}'.format(thumb))
 
-        if thumb and thumb not in metadata.banners:  Log('[X] banners:   {}'.format(thumb));  metadata.banners [thumb] = Proxy.Media(HTTP.Request(thumb).content, sort_order=1)
-        else:                                        Log('[ ] banners:   {}'.format(thumb))
+        if not os.path.exists(os.path.join(dir, 'youtube.id')):    
+          thumb_channel = Dict(json_channel_details, 'snippet', 'thumbnails', 'medium', 'url') or Dict(json_channel_details, 'snippet', 'thumbnails', 'high', 'url')   or Dict(json_channel_details, 'snippet', 'thumbnails', 'default', 'url')
+          metadata.roles.clear()
+          role       = metadata.roles.new()
+          role.role  = filterInvalidXMLChars(Dict(json_channel_details, 'snippet', 'title'))
+          role.name  = filterInvalidXMLChars(Dict(json_channel_details, 'snippet', 'title'))
+          role.photo = thumb_channel
+          Log.Info('[ ] role:        {}'.format(Dict(json_channel_details,'snippet','title')))
+          thumb = Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvLowImageUrl' ) or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvMediumImageUrl') \
+               or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvHighImageUrl') or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvImageUrl'      )
+          if thumb and thumb not in metadata.art:  Log('[X] art:       {}'.format(thumb));  metadata.art [thumb] = Proxy.Media(HTTP.Request(thumb).content, sort_order=1)
+          else:                                    Log('[ ] art:       {}'.format(thumb))
 
-        if thumb_channel and thumb_channel not in metadata.posters:
-          Log('[X] posters:   {}'.format(thumb_channel))
-          metadata.posters [thumb_channel] = Proxy.Media(HTTP.Request(thumb_channel).content, sort_order=1 if Prefs['media_poster_source']=='Channel' else 2)
-          #metadata.posters.validate_keys([thumb_channel])
-        else:                                                        Log('[ ] posters:   {}'.format(thumb_channel))
+          if thumb and thumb not in metadata.banners:  Log('[X] banners:   {}'.format(thumb));  metadata.banners [thumb] = Proxy.Media(HTTP.Request(thumb).content, sort_order=1)
+          else:                                        Log('[ ] banners:   {}'.format(thumb))
 
-        #if not Dict(json_playlist_details, 'snippet', 'publishedAt'):  metadata.originally_available_at = Datetime.ParseDate(Dict(json_channel_items, 'snippet', 'publishedAt')).date();  Log.Info('[ ] publishedAt:  {}'.format(Dict(json_channel_items, 'snippet', 'publishedAt' )))
-    
+          if thumb_channel and thumb_channel not in metadata.posters:
+            Log('[X] posters:   {}'.format(thumb_channel))
+            metadata.posters [thumb_channel] = Proxy.Media(HTTP.Request(thumb_channel).content, sort_order=1 if Prefs['media_poster_source']=='Channel' else 2)
+            #metadata.posters.validate_keys([thumb_channel])
+          else:                                                        Log('[ ] posters:   {}'.format(thumb_channel))
+
+          #if not Dict(json_playlist_details, 'snippet', 'publishedAt'):  metadata.originally_available_at = Datetime.ParseDate(Dict(json_channel_items, 'snippet', 'publishedAt')).date();  Log.Info('[ ] publishedAt:  {}'.format(Dict(json_channel_items, 'snippet', 'publishedAt' )))
+      
     ### Season + Episode loop ###
     genre_array = {}
     episodes    = 0
