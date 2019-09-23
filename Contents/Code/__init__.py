@@ -474,12 +474,12 @@ def Update(metadata, media, lang, force, movie):
 
 ### Agent declaration ##################################################################################################################################################
 class YouTubeSeriesAgent(Agent.TV_Shows):
-  name, primary_provider, fallback_agent, contributes_to, accepts_from, languages = 'YouTube', True, None, None, ['com.plexapp.agents.localmedia'], [Locale.Language.NoLanguage]
+  name, primary_provider, fallback_agent, contributes_to, accepts_from, languages = 'YouTubeSeries', True, None, None, ['com.plexapp.agents.localmedia'], [Locale.Language.NoLanguage]
   def search (self, results,  media, lang, manual):  Search (results,  media, lang, manual, False)
   def update (self, metadata, media, lang, force ):  Update (metadata, media, lang, force,  False)
 
-class YouTubeMovieAgentAgent(Agent.Movies):
-  name, primary_provider, fallback_agent, contributes_to, accepts_from, languages = 'YouTube', True, None, None, ['com.plexapp.agents.localmedia'], [Locale.Language.NoLanguage]
+class YouTubeMovieAgent(Agent.Movies):
+  name, primary_provider, fallback_agent, contributes_to, accepts_from, languages = 'YouTubeMovie', True, None, None, ['com.plexapp.agents.localmedia'], [Locale.Language.NoLanguage]
   def search (self, results,  media, lang, manual):  Search (results,  media, lang, manual, True)
   def update (self, metadata, media, lang, force ):  Update (metadata, media, lang, force,  True)
 
