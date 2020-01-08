@@ -197,7 +197,7 @@ def Update(metadata, media, lang, force, movie):
         metadata.title                   = video_details['snippet']['title'];                                           Log('series title:       "{}"'.format(video_details['snippet']['title']))
         metadata.summary                 = video_details['snippet']['description'];                                     Log('series description: '+video_details['snippet']['description'].replace('\n', '. '))
         thumb                            = video_details['snippet']['thumbnails']['default']['url'];                    Log('thumb: "{}"'.format(thumb))
-        poster                           = video_details['snippet']['thumbnails']['standard']['url'];                   Log('poster: "{}"'.format(thumb))
+        poster                           = Dict(video_details, 'snippet', 'thumbnails', 'default', 'url') or Dict(video_details, 'snippet', 'thumbnails', 'high', 'url') or Dict(video_details, 'snippet', 'thumbnails', 'standard', 'url')` on the lines calling the 'standard' dict key (lines 200, 336, 421, 444) instead of `video_details['snippet']['thumbnails']['standard']['url'];  Log('poster: "{}"'.format(thumb))
         metadata.posters[thumb]          = Proxy.Media(HTTP.Request(poster).content, sort_order=1)
         metadata.duration                = ISO8601DurationToSeconds(video_details['contentDetails']['duration'])*1000;  Log('series duration:    "{}"->"{}"'.format(video_details['contentDetails']['duration'], metadata.duration))
         if Dict(video_details, 'statistics', 'likeCount') and int(video_details['statistics']['likeCount']) > 0:
