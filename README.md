@@ -1,5 +1,7 @@
 # YouTube-Agent.bundle Plex Movie & TV Series library agent 
 
+Please respect Youtube Terms and conditions: https://www.youtube.com/t/terms
+
 Download playlist:
 Take video link: https://www.youtube.com/watch?v=f-wWBGo6a2w&list=PL22J3VaeABQD_IZs7y60I3lUrrFTzkpat
 click on top right on playlist name or remove v=video_id https://www.youtube.com/watch?list=PL22J3VaeABQD_IZs7y60I3lUrrFTzkpat
