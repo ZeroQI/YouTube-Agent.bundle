@@ -110,6 +110,7 @@ def Search(results, media, lang, manual, movie):
   YOUTUBE_API_KEY   = Prefs['YouTube-Agent_youtube_api_key']
   displayname = os.path.basename(media.items[0].parts[0].file) if movie else media.show
   filename = os.path.basename(media.items[0].parts[0].file) if movie else os.path.splitext(os.path.basename(media.filename))[0]
+  filename = urllib2.unquote(filename)
   dir      = GetMediaDir(media, movie)
   Log(''.ljust(157, '='))
   Log('search() - dir: {}, filename: {}'.format(dir, filename))
