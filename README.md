@@ -33,6 +33,7 @@ Naming convention for TV Series library:
 Note:
 - The Absolute Series Scanner will support youtube.id file in series folder and pass it to the agent through the series title
 - The agent will support the following formats in file or folder names [xxxxxxxx], [youtube-xxx], [YouTube-xxx], and [Youtube-xxx ]
+- [!] register your own API key and also replace API_KEY='AIzaSyC2q8yjciNdlYRNdvwbb7NEcDxBkv1Cass' in ass code and the agent code
 
 Movie Library Fields supported:
 - title
