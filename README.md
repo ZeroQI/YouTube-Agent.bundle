@@ -34,6 +34,8 @@ Note:
 - The Absolute Series Scanner will support youtube.id file in series folder and pass it to the agent through the series title
 - The agent will support the following formats in file or folder names [xxxxxxxx], [youtube-xxx], [YouTube-xxx], and [Youtube-xxx ]
 - [!] register your own API key and also replace API_KEY='AIzaSyC2q8yjciNdlYRNdvwbb7NEcDxBkv1Cass' in ass code and the agent code
+- You can use grouping folders and a collection field will be created. If the logs complain about 'INFO (__init__:527) - Place correct Plex token in X-Plex-Token.id file in logs folder or in PLEX_LIBRARY_URL variable to have a log per library - https://support.plex.tv/hc/en-us/articles/204059436-Finding-your-account-token-X-Plex-Token', then create a "Plex Media Server/X-Plex-Token.id" containing the Plex token id by logging on plex.tv/desktop, then https://plex.tv/devices.xml, it will be MediaContainer/Device ... token="xxxxxxxxxxxxxx".
+
 
 Movie Library Fields supported:
 - title
