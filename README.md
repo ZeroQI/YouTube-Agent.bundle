@@ -17,6 +17,7 @@ YouTube IDs
 - Video id: 11 chars long 0-9 a-Z _ -
 
 Requirements
+- Do create your own YouTube API key and replace in ASS code and agent settings
 - Please use the Absolute Series Scanner to scan your media and leave the YouTube id in the series/movie title
 - leave the YouTube video ID on every file
 - Playlist (preffered) id OR Channel id on series foldername (as Search() need to assign an id to the series)
