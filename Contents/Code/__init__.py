@@ -168,7 +168,7 @@ def search_with_api(results, media, lang, manual, movie):
     Log(''.ljust(157, '='))
   Log(''.ljust(157, '='))
 
-def search_from_info_json(results, media, lang):
+def search_from_info_json(results, media, lang, movie=False):
 
   displayname = os.path.basename(media.items[0].parts[0].file) if movie else media.show
   filename    = os.path.basename(media.items[0].parts[0].file) if movie else os.path.splitext(os.path.basename(media.filename))[0]
@@ -197,7 +197,7 @@ def Search(results, media, lang, manual, movie):
   if metadata_source == "ApiOnly":
     search_with_api(results, media, lang, manual, movie)
   else: #JsonWithApiBackup
-    search_from_info_json(results, media, lang)
+    search_from_info_json(results, media, lang, movie)
     if not results:
       search_with_api(results, media, lang, manual, movie)
 
