@@ -180,15 +180,15 @@ def search_from_info_json(results, media, lang, movie=False):
 
   Log('searching for info file - dir: {}, json_filename: {}'.format(dir, json_filename))
 
-  with open(json_filename) as f:
-    video_details = JSON.ObjectFromString(f.read())
+  try:
+    with open(json_filename) as f:
+      video_details = JSON.ObjectFromString(f.read())
+  except:  return
   
-  guid = Dict(video_details, 'id')
-
+  guid       = Dict(video_details, 'id')
   datestring = Dict(video_details, 'upload_date')
-  datetime = Datetime.ParseDate(datestring)
+  datetime   = Datetime.ParseDate(datestring)
   results.Append( MetadataSearchResult( id='youtube|{}|{}'.format(guid,os.path.basename(dir)), name=displayname, year=datetime.year, score=100, lang=lang ) )
-
 
 ### Assign unique ID ###
 def Search(results, media, lang, manual, movie):
