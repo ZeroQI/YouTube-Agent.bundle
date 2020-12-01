@@ -591,6 +591,7 @@ def Update(metadata, media, lang, force, movie):
       else:
         Log.Info('[?] json_channel_details: {}'.format(json_channel_details.keys()))
         Log.Info('[ ] title:       "{}"'.format(Dict(json_channel_details, 'snippet', 'title'      )))
+        metadata.title = filterInvalidXMLChars(Dict(json_channel_details, 'snippet', 'title'      ))
         if not Dict(json_playlist_details, 'snippet', 'description'):
           if Dict(json_channel_details, 'snippet', 'description'):  metadata.summary =  Dict(json_channel_details, 'snippet', 'description');
           #elif guid.startswith('PL'):  metadata.summary = 'No Playlist nor Channel summary'
