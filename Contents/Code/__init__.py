@@ -293,7 +293,7 @@ def populate_episode_metadata_from_api(filename, episode, metadata, first, episo
       episode.summary                 = filterInvalidXMLChars(video_details['snippet']['description']);                           Log.Info('[ ] summary:  "{}"'.format(video_details['snippet']['description'].replace('\n', '. ')))
       episode.originally_available_at = Datetime.ParseDate(video_details['snippet']['publishedAt']).date();                       Log.Info('[ ] date:     "{}"'.format(video_details['snippet']['publishedAt']))
       if Dict(video_details, 'statistics', 'likeCount') and int(video_details['statistics']['likeCount']) > 0:
-        episode.rating                = float(10*int(video_details['statistics']['likeCount'])/(int(video_details['statistics']['dislikeCount'])+int(video_details['statistics']['likeCount'])));  Log('[ ] rating:   "{}"'.format(episode.rating))
+        episode.rating                = 10*float(video_details['statistics']['likeCount'])/(float(video_details['statistics']['dislikeCount'])+float(video_details['statistics']['likeCount']));  Log('[ ] rating:   "{}"'.format(episode.rating))
       episode.thumbs[thumb]           = Proxy.Media(picture, sort_order=1);                                                       Log.Info('[ ] thumbs:   "{}"'.format(thumb))
       episode.thumbs.validate_keys([thumb])
       episode.duration                = ISO8601DurationToSeconds(video_details['contentDetails']['duration'])*1000;               Log.Info('[ ] duration: "{}"->"{}"'.format(video_details['contentDetails']['duration'], episode.duration))
@@ -591,6 +591,7 @@ def Update(metadata, media, lang, force, movie):
       else:
         Log.Info('[?] json_channel_details: {}'.format(json_channel_details.keys()))
         Log.Info('[ ] title:       "{}"'.format(Dict(json_channel_details, 'snippet', 'title'      )))
+        metadata.title = filterInvalidXMLChars(Dict(json_channel_details, 'snippet', 'title'      ))
         if not Dict(json_playlist_details, 'snippet', 'description'):
           if Dict(json_channel_details, 'snippet', 'description'):  metadata.summary =  Dict(json_channel_details, 'snippet', 'description');
           #elif guid.startswith('PL'):  metadata.summary = 'No Playlist nor Channel summary'
