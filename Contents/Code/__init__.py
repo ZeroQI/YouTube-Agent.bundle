@@ -382,27 +382,20 @@ def populate_episode_metadata_from_info_json(series_root_folder, filename, episo
 
 ### Download metadata using unique ID ###
 def Update(metadata, media, lang, force, movie):
-
   Log('update()')
-  
   YOUTUBE_API_KEY = Prefs['YouTube-Agent_youtube_api_key']
-
   metadata_source = Prefs['metadata_source']  
-
-  guid = None
-  dir = GetMediaDir(media, movie)
+  guid            = None
+  dir             = GetMediaDir(media, movie)
 
   #Get video id/guid
   if metadata_source == "JsonWithApiBackup":
     filename = GetMediaDir(media, movie, True)
-
     Log(''.ljust(157, '='))
     json_filename = filename.split('.')[0] + ".info.json"
-
     Log('Attempting to load details from json file - json_filename: {}'.format(json_filename))
-
     video_details = {}
-
+    
     try:
       with open(json_filename) as f:
         video_details = JSON.ObjectFromString(f.read())
@@ -427,10 +420,11 @@ def Update(metadata, media, lang, force, movie):
       pass
   
   if guid is None: #Api Fallback
-    temp1, guid, temp2 = metadata.id.split("|")
+    temp1, guid, series_folder = metadata.id.split("|")
     channel_id = guid if guid.startswith('UC') or guid.startswith('HC') else ''
     channel_title = None
-
+  else: series_folder = None
+  
   season_map = {}
   
   if not (len(guid)>2 and guid[0:2] in ('PL', 'UU', 'FL', 'LP', 'RD')):  metadata.title = re.sub(r'\[.*\]', '', dir).strip()  #no id mode, update title so ep gets updated
@@ -493,14 +487,12 @@ def Update(metadata, media, lang, force, movie):
         if collection not in metadata.collections:  metadata.collections=[collection]
       else:  Log.Info("Grouping folder not found or single folder, root: {}, path: {}, Grouping folder: {}, subdirs: {}, reverse_path: {}".format(root, path, os.path.basename(series_root_folder), subfolder_count, reverse_path))
 
-    #
     json                  = {}
     json_playlist_details = {}
     json_playlist_items   = {}
     json_channel_items    = {}
     json_channel_details  = {}
     metadata.studio       = 'YouTube'
-
 
     if os.path.exists(os.path.join(dir, 'youtube.id')):
       with open(os.path.join(dir, 'youtube.id')) as f:
@@ -547,10 +539,6 @@ def Update(metadata, media, lang, force, movie):
             else:                                                        Log('[ ] posters:   {}'.format(thumb_channel))
 
             #if not Dict(json_playlist_details, 'snippet', 'publishedAt'):  metadata.originally_available_at = Datetime.ParseDate(Dict(json_channel_items, 'snippet', 'publishedAt')).date();  Log.Info('[ ] publishedAt:  {}'.format(Dict(json_channel_items, 'snippet', 'publishedAt' )))
-        
-
-
-
     
     # Loading Playlist
     if len(guid)>2 and guid[0:2] in ('PL', 'UU', 'FL', 'LP', 'RD'):
@@ -582,8 +570,10 @@ def Update(metadata, media, lang, force, movie):
       except Exception as e:  Log.Info('[!] json_playlist_items exception: {}, url: {}'.format(e, YOUTUBE_PLAYLIST_ITEMS.format(guid)))
       else:                   Log.Info('[?] json_playlist_items: {}'.format(json_playlist_items.keys()))
 
-    else:  Log.Info('after')
-
+    else:
+      Log.Info('No GUID so random folder')
+      metadata.title = series_folder  #instead of path use series foldername
+      
     # Loading Channel Details for summary, country, background and role image
     if channel_id.startswith('UC') or channel_id.startswith('HC'):
       try:
