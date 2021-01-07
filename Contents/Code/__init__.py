@@ -403,24 +403,28 @@ def Update(metadata, media, lang, force, movie):
 
     video_details = {}
 
-    with open(json_filename) as f:
-      video_details = JSON.ObjectFromString(f.read())
+    try:
+      with open(json_filename) as f:
+        video_details = JSON.ObjectFromString(f.read())
     
-    guid = Dict(video_details, 'id')
-    channel_id = Dict(video_details, 'channel_id')
+      guid = Dict(video_details, 'id')
+      channel_id = Dict(video_details, 'channel_id')
 
-    # Loading Channel Details for summary, country, background and role image
-    if channel_id.startswith('UC') or channel_id.startswith('HC'):
-      try:
+      # Loading Channel Details for summary, country, background and role image
+      if channel_id.startswith('UC') or channel_id.startswith('HC'):
+        try:
 
-        URL_CHANNEL_DETAILS   = '{}&id={}&key={}'.format(YOUTUBE_CHANNEL_DETAILS,channel_id, YOUTUBE_API_KEY)
-        json_channel_details  = json_load(URL_CHANNEL_DETAILS)['items'][0]
+          URL_CHANNEL_DETAILS   = '{}&id={}&key={}'.format(YOUTUBE_CHANNEL_DETAILS,channel_id, YOUTUBE_API_KEY)
+          json_channel_details  = json_load(URL_CHANNEL_DETAILS)['items'][0]
 
-      except Exception as e:  Log('exception: {}, url: {}'.format(e, guid))
+        except Exception as e:  Log('exception: {}, url: {}'.format(e, guid))
       else:
         Log.Info('[?] json_channel_details: {}'.format(json_channel_details.keys()))
         channel_title = Dict(json_channel_details, 'snippet', 'title')
         Log.Info('[ ] title:       "{}"'.format(channel_title))
+    except IOError:
+      guid = None
+      pass
   
   if guid is None: #Api Fallback
     temp1, guid, temp2 = metadata.id.split("|")
