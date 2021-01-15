@@ -387,7 +387,8 @@ def Update(metadata, media, lang, force, movie):
   metadata_source = Prefs['metadata_source']  
   guid            = None
   dir             = GetMediaDir(media, movie)
-
+  channel_title   = ""
+  
   #Get video id/guid
   if metadata_source == "JsonWithApiBackup":
     filename = GetMediaDir(media, movie, True)
