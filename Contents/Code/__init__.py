@@ -358,7 +358,7 @@ def populate_episode_metadata_from_info_json(series_root_folder, filename, episo
       episode.rating                = float(10*int(Dict(video_details, 'like_count'))/(int(Dict(video_details, 'dislike_count'))+int(Dict(video_details, 'like_count'))));  Log('[ ] rating:   "{}"'.format(episode.rating))
     episode.thumbs[thumb]           = Proxy.Media(picture, sort_order=1);                                                  Log.Info('[ ] thumbs:   "{}"'.format(thumb))
     episode.thumbs.validate_keys([thumb])
-    episode.duration                = Dict(video_details, 'duration');                                                     Log.Info('[ ] duration: "{}"'.format(episode.duration))
+    episode.duration                = int(Dict(video_details, 'duration'));                                                     Log.Info('[ ] duration: "{}"'.format(episode.duration))
     #videoId = Dict(video, 'contentDetails', 'videoId')
     if channel_title and channel_title not in [role_obj.name for role_obj in episode.directors]:
       meta_director       = episode.directors.new()
