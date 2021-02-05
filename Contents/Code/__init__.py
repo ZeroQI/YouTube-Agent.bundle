@@ -49,10 +49,11 @@ def natural_sort_key(s):  return [int(text) if text.isdigit() else text for text
 ### Convert ISO8601 Duration format into seconds ###
 def ISO8601DurationToSeconds(duration):
   def js_int(value):  return int(''.join([x for x in list(value or '0') if x.isdigit()]))  # js-like parseInt - https://gist.github.com/douglasmiranda/2174255
-  match = re.match('PT(\d+H)?(\d+M)?(\d+S)?', duration).groups()
-  return 3600 * js_int(match[0]) + 60 * js_int(match[1]) + js_int(match[2])
+  try:     match = re.match('PT(\d+H)?(\d+M)?(\d+S)?', duration).groups()
+  except:  return 0
+  else:    return 3600 * js_int(match[0]) + 60 * js_int(match[1]) + js_int(match[2])
 
-  ### Get media directory ###
+### Get media directory ###
 def GetMediaDir (media, movie, file=False):
   if movie:  return os.path.dirname(media.items[0].parts[0].file)
   else:
