@@ -7,6 +7,9 @@ Take video link: https://www.youtube.com/watch?v=f-wWBGo6a2w&list=PL22J3VaeABQD_
 click on top right on playlist name or remove v=video_id https://www.youtube.com/watch?list=PL22J3VaeABQD_IZs7y60I3lUrrFTzkpat
 .\youtube-dl.exe https://www.youtube.com/watch?list=PL22J3VaeABQD_IZs7y60I3lUrrFTzkpat
 
+--restrict-filenames
+Restrict filenames to only ASCII characters, and avoid "&" and spaces in filenames, makes the filenames slightly messy but no crash due to unsupported character
+
 My_Plex_Pass@forums.plex.com script for both channels and playlists in format channel [chanid]\title [videoid].ext:
 - youtube-dl -v --dateafter 20081004 --download-archive /volume1/Youtube/.Downloaded -i -o "/volume1/Youtube/%(uploader)s [%(channel_id)s]/%(playlist_index)s - %(title)s [%(id)s].%(ext)s" -f bestvideo+bestaudio -ci --batch-file=/volume1/Youtube/Channels_to_DL.txt
 - Format generated: "Youtube\Errant Signal [UCm4JnxTxtvItQecKUc4zRhQ]\001 - Thanksgiving Leftovers - Battlefield V [Qgdr8xdqGDE]"
