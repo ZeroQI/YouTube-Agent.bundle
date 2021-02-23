@@ -1,19 +1,15 @@
 # -*- coding: utf-8 -*-
 '''
 YouTube Movie and Series Metadata Agent
-
 Movie library
 - movies/movies [video_id].ext
-
 Serie Library
 - Name [channel_id ]/file [video_id].ext   #scanner use video id to number, season 1(or year youtube3/4 mode)
 - Name [Playlist_id]/file [video_id].ext   #scanner use video id to number, season 1(or year youtube-2)
-
 Collection      | Series   | season | File
 ----------------|----------|--------|-----------------------
 Subject         | Channel  |      1 | loose videos with video_id. year as season?
 Subject/channel | Playlist |      1 | loose videos with video_id
-
 IDs not used
 - username:     channels.list(part="id", forUsername="username")
 - display name: search.list(part="snippet", type="channel", q="display name") #not unique
@@ -103,19 +99,16 @@ def json_load(url):
 
 ### load image if present in local dir
 def img_load(series_root_folder, filename):
-  IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'tiff', 'gif', 'jp2']
-  image = None
-
   Log('img_load() - series_root_folder: {}, filename: {}'.format(series_root_folder, filename))
-
+  IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'tiff', 'gif', 'jp2']
+  image      = None
   for img in IMAGE_EXTS:
     img_filename = series_root_folder + "/" + filename.rsplit('.', 1)[0] + "." + img
-    # Log('looking for %s', img_filename)
     if os.path.isfile(img_filename):
       Log('local thumbnail found for file %s', filename)
       image = img_filename
       break
-  return image
+  return img_filename, image
 
 
 def Start():
@@ -238,8 +231,9 @@ def populate_movie_metadata_from_api(metadata, guid):
     metadata.title                   = video_details['snippet']['title'];                                           Log('series title:       "{}"'.format(video_details['snippet']['title']))
     metadata.summary                 = video_details['snippet']['description'];                                     Log('series description: '+video_details['snippet']['description'].replace('\n', '. '))
     thumb                            = video_details['snippet']['thumbnails']['default']['url'];                    Log('thumb: "{}"'.format(thumb))
-    poster                           = Dict(video_details, 'snippet', 'thumbnails', 'default', 'url') or Dict(video_details, 'snippet', 'thumbnails', 'high', 'url') or Dict(video_details, 'snippet', 'thumbnails', 'standard', 'url');  Log('poster: "{}"'.format(thumb))
-    metadata.posters[thumb]          = Proxy.Media(HTTP.Request(poster).content, sort_order=1)
+    if thumb and thumb not in metadata.posters:
+      poster                           = Dict(video_details, 'snippet', 'thumbnails', 'default', 'url') or Dict(video_details, 'snippet', 'thumbnails', 'high', 'url') or Dict(video_details, 'snippet', 'thumbnails', 'standard', 'url');  Log('poster: "{}"'.format(thumb))
+      metadata.posters[thumb]          = Proxy.Media(HTTP.Request(poster).content, sort_order=1)
     metadata.duration                = ISO8601DurationToSeconds(video_details['contentDetails']['duration'])*1000;  Log('series duration:    "{}"->"{}"'.format(video_details['contentDetails']['duration'], metadata.duration))
     if Dict(video_details, 'statistics', 'likeCount') and int(video_details['statistics']['likeCount']) > 0:
       metadata.rating                  = float(10*int(video_details['statistics']['likeCount'])/(int(video_details['statistics']['dislikeCount'])+int(video_details['statistics']['likeCount'])));  Log('rating: {}'.format(metadata.rating))
@@ -267,8 +261,9 @@ def populate_movie_metadata_from_info_json(metadata, video_details, channel_titl
   metadata.title                   = Dict(video_details, 'title');                                  Log('series title:       "{}"'.format(Dict(video_details, 'title')))
   metadata.summary                 = Dict(video_details, 'description');                            Log('series description: '+Dict(video_details, 'description').replace('\n', '. '))
   thumb                            = Dict(video_details, 'thumbnails', 3, 'url') or Dict(video_details, 'thumbnails', 2, 'url') or Dict(video_details, 'thumbnails', 1, 'url') or Dict(video_details, 'thumbnails', 0, 'url'); Log('thumb: "{}"'.format(thumb))
-  poster                           = Dict(video_details, 'thumbnails', '0', 'url');                 Log('poster: "{}"'.format(thumb))
-  metadata.posters[thumb]          = Proxy.Media(HTTP.Request(poster).content, sort_order=1)
+  if thumb and thumb not in metadata.posters:
+    poster                         = Dict(video_details, 'thumbnails', '0', 'url');                 Log('poster: "{}"'.format(thumb))
+    metadata.posters[thumb]        = Proxy.Media(HTTP.Request(poster).content, sort_order=1)
   metadata.duration                = Dict(video_details,'duration');                                Log('series duration:    "{}"->"{}"'.format(Dict(video_details, 'duration'), metadata.duration))
   if Dict(video_details, 'statistics', 'likeCount') and int(Dict(video_details, 'like_count')) > 0:
     metadata.rating                = float(10*int(Dict(video_details, 'like_count'))/(int(Dict(video_details, 'dislike_count'))+int(Dict(video_details, 'like_count'))));  Log('rating: {}'.format(metadata.rating))
@@ -312,8 +307,9 @@ def populate_episode_metadata_from_api(filename, episode, metadata, first, episo
       episode.originally_available_at = Datetime.ParseDate(video_details['snippet']['publishedAt']).date();                       Log.Info('[ ] date:     "{}"'.format(video_details['snippet']['publishedAt']))
       if Dict(video_details, 'statistics', 'likeCount') and int(video_details['statistics']['likeCount']) > 0:
         episode.rating                = 10*float(video_details['statistics']['likeCount'])/(float(video_details['statistics']['dislikeCount'])+float(video_details['statistics']['likeCount']));  Log('[ ] rating:   "{}"'.format(episode.rating))
-      episode.thumbs[thumb]           = Proxy.Media(picture, sort_order=1);                                                       Log.Info('[ ] thumbs:   "{}"'.format(thumb))
-      episode.thumbs.validate_keys([thumb])
+      i thumb and thumb in episode.thumbs:
+        episode.thumbs[thumb]           = Proxy.Media(picture, sort_order=1);                                                       Log.Info('[ ] thumbs:   "{}"'.format(thumb))
+        episode.thumbs.validate_keys([thumb])
       episode.duration                = ISO8601DurationToSeconds(video_details['contentDetails']['duration'])*1000;               Log.Info('[ ] duration: "{}"->"{}"'.format(video_details['contentDetails']['duration'], episode.duration))
       #videoId = Dict(video, 'contentDetails', 'videoId')
       if Dict(video_details, 'snippet',  'channelTitle') and Dict(video_details, 'snippet',  'channelTitle') not in [role_obj.name for role_obj in episode.directors]:
@@ -354,34 +350,29 @@ def populate_episode_metadata_from_info_json(series_root_folder, filename, episo
     return False
 
   json_file_path = matches[0]
-    
   Log.Info('Attempting to read metadata from {}'.format(json_file_path))
-
   video_details = None
-
   with open(json_file_path) as f:
     video_details = JSON.ObjectFromString(f.read())
 
   if video_details:
     videoId = Dict(video_details, 'title')
     Log.Info('# videoId [{}] not in Playlist/channel item list so loading video_details'.format(videoId))
-
-    #Log.Info('[?] link:     "https://www.youtube.com/watch?v={}"'.format(videoId))
-    t_thumb = img_load(series_root_folder, filename)
-    if t_thumb is None:
-      thumb                           = Dict(video_details, 'thumbnails', 3, 'url') or Dict(video_details, 'thumbnails', 2, 'url') or Dict(video_details, 'thumbnails', 1, 'url') or Dict(video_details, 'thumbnails', 0, 'url')
-      picture                         = HTTP.Request(thumb).content
-    else:
-      thumb = t_thumb
-      picture = t_thumb
-
+    Log.Info('[?] link:     "https://www.youtube.com/watch?v={}"'.format(videoId))
+    
+    thumb, picture = img_load(series_root_folder, filename)  #Load locally
+    if thumb is None:
+      thumb = Dict(video_details, 'thumbnails', 3, 'url') or Dict(video_details, 'thumbnails', 2, 'url') or Dict(video_details, 'thumbnails', 1, 'url') or Dict(video_details, 'thumbnails', 0, 'url')
+      if thumb not in episode.thumbs: picture = HTTP.Request(thumb).content  
+    if thumb and thumb not in episode.thumbs:
+      episode.thumbs[thumb] = Proxy.Media(picture, sort_order=1);                                                  Log.Info('[ ] thumbs:   "{}"'.format(thumb))
+      episode.thumbs.validate_keys([thumb])
+    
     episode.title                   = filterInvalidXMLChars(Dict(video_details, 'title'));                                 Log.Info('[ ] title:    "{}"'.format(Dict(video_details, 'title')))
     episode.summary                 = filterInvalidXMLChars(Dict(video_details, 'description'));                           Log.Info('[ ] summary:  "{}"'.format(Dict(video_details, 'description').replace('\n', '. ')))
     episode.originally_available_at = Datetime.ParseDate(Dict(video_details, 'upload_date')).date();                       Log.Info('[ ] date:     "{}"'.format(Dict(video_details, 'upload_date')))
     if Dict(video_details, 'likeCount') and int(Dict(video_details, 'like_count')) > 0:
       episode.rating                = float(10*int(Dict(video_details, 'like_count'))/(int(Dict(video_details, 'dislike_count'))+int(Dict(video_details, 'like_count'))));  Log('[ ] rating:   "{}"'.format(episode.rating))
-    episode.thumbs[thumb]           = Proxy.Media(picture, sort_order=1);                                                  Log.Info('[ ] thumbs:   "{}"'.format(thumb))
-    episode.thumbs.validate_keys([thumb])
     episode.duration                = int(Dict(video_details, 'duration'));                                                     Log.Info('[ ] duration: "{}"'.format(episode.duration))
     #videoId = Dict(video, 'contentDetails', 'videoId')
     if channel_title and channel_title not in [role_obj.name for role_obj in episode.directors]:
@@ -676,11 +667,12 @@ def Update(metadata, media, lang, force, movie):
 
             # videoId not in Playlist/channel
             thumb                           = Dict(video, 'snippet', 'thumbnails', 'standard', 'url') or Dict(video, 'snippet', 'thumbnails', 'high', 'url') or Dict(video, 'snippet', 'thumbnails', 'medium', 'url') or Dict(video, 'snippet', 'thumbnails', 'default', 'url')
-            picture                         = HTTP.Request(thumb).content 
+            if thumb and thumb in episode.thumbs:
+              picture                       = HTTP.Request(thumb).content 
+              episode.thumbs[thumb]         = Proxy.Media(picture, sort_order=1);                                Log.Info('[ ] thumbnail:    {}'.format(thumb))
             episode.title                   = filterInvalidXMLChars(Dict(video, 'snippet', 'title'       ));     Log.Info('[ ] title:        {}'.format(Dict(video, 'snippet', 'title'       )))
             episode.summary                 = filterInvalidXMLChars(Dict(video, 'snippet', 'description' ));     Log.Info('[ ] description:  {}'.format(Dict(video, 'snippet', 'description' ).replace('\n', '. ')))
             episode.originally_available_at = Datetime.ParseDate(Dict(video, 'snippet', 'publishedAt')).date();  Log.Info('[ ] publishedAt:  {}'.format(Dict(video, 'snippet', 'publishedAt' )))
-            episode.thumbs[thumb]           = Proxy.Media(picture, sort_order=1);                                Log.Info('[ ] thumbnail:    {}'.format(thumb))
             Log.Info('[ ] channelTitle: {}'.format(Dict(video, 'snippet', 'channelTitle')))
             break
         else:
