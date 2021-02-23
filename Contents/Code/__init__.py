@@ -101,6 +101,23 @@ def json_load(url):
   #Log.Info('total items: {}'.format(len(Dict(json, 'items'))))
   return json
 
+### load image if present in local dir
+def img_load(series_root_folder, filename):
+  IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'tiff', 'gif', 'jp2']
+  image = None
+
+  Log('img_load() - series_root_folder: {}, filename: {}'.format(series_root_folder, filename))
+
+  for img in IMAGE_EXTS:
+    img_filename = series_root_folder + "/" + filename.rsplit('.', 1)[0] + "." + img
+    # Log('looking for %s', img_filename)
+    if os.path.isfile(img_filename):
+      Log('local thumbnail found for file %s', filename)
+      image = img_filename
+      break
+  return image
+
+
 def Start():
   HTTP.CacheTime                  = CACHE_1MONTH
   HTTP.Headers['User-Agent'     ] = 'Mozilla/5.0 (iPad; CPU OS 7_0_4 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11B554a Safari/9537.54'
@@ -177,7 +194,7 @@ def search_from_info_json(results, media, lang, movie=False):
   dir   = GetMediaDir(media, movie)
   Log(''.ljust(157, '='))
   Log('search_metadata_from_info_json() - dir: {}, filename: {}'.format(dir, filename))
-  json_filename = filename.split('.')[0] + ".info.json"
+  json_filename = filename.rsplit('.', 1)[0] + ".info.json"
 
   Log('searching for info file - dir: {}, json_filename: {}'.format(dir, json_filename))
 
@@ -322,7 +339,7 @@ def populate_episode_metadata_from_info_json(series_root_folder, filename, episo
   Log('populate_episode_metadata_from_info_json() - series_root_folder: {}, filename: {}'.format(series_root_folder, filename))
 
   # finding info file
-  json_filename = filename.split('.')[0] + ".info.json"
+  json_filename = filename.rsplit('.', 1)[0] + ".info.json"
   Log.Info('Searching for "{}". Searching in "{}".'.format(json_filename, series_root_folder))
   matches = []
   for root, dirnames, filenames in os.walk(series_root_folder):
@@ -350,8 +367,14 @@ def populate_episode_metadata_from_info_json(series_root_folder, filename, episo
     Log.Info('# videoId [{}] not in Playlist/channel item list so loading video_details'.format(videoId))
 
     #Log.Info('[?] link:     "https://www.youtube.com/watch?v={}"'.format(videoId))
-    thumb                           = Dict(video_details, 'thumbnails', 3, 'url') or Dict(video_details, 'thumbnails', 2, 'url') or Dict(video_details, 'thumbnails', 1, 'url') or Dict(video_details, 'thumbnails', 0, 'url')
-    picture                         = HTTP.Request(thumb).content
+    t_thumb = img_load(series_root_folder, filename)
+    if t_thumb is None:
+      thumb                           = Dict(video_details, 'thumbnails', 3, 'url') or Dict(video_details, 'thumbnails', 2, 'url') or Dict(video_details, 'thumbnails', 1, 'url') or Dict(video_details, 'thumbnails', 0, 'url')
+      picture                         = HTTP.Request(thumb).content
+    else:
+      thumb = t_thumb
+      picture = t_thumb
+
     episode.title                   = filterInvalidXMLChars(Dict(video_details, 'title'));                                 Log.Info('[ ] title:    "{}"'.format(Dict(video_details, 'title')))
     episode.summary                 = filterInvalidXMLChars(Dict(video_details, 'description'));                           Log.Info('[ ] summary:  "{}"'.format(Dict(video_details, 'description').replace('\n', '. ')))
     episode.originally_available_at = Datetime.ParseDate(Dict(video_details, 'upload_date')).date();                       Log.Info('[ ] date:     "{}"'.format(Dict(video_details, 'upload_date')))
@@ -394,7 +417,7 @@ def Update(metadata, media, lang, force, movie):
   if metadata_source == "JsonWithApiBackup":
     filename = GetMediaDir(media, movie, True)
     Log(''.ljust(157, '='))
-    json_filename = filename.split('.')[0] + ".info.json"
+    json_filename = filename.rsplit('.', 1)[0] + ".info.json"
     Log('Attempting to load details from json file - json_filename: {}'.format(json_filename))
     video_details = {}
     
