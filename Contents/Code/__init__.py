@@ -307,8 +307,8 @@ def populate_episode_metadata_from_api(filename, episode, metadata, first, episo
       episode.originally_available_at = Datetime.ParseDate(video_details['snippet']['publishedAt']).date();                       Log.Info('[ ] date:     "{}"'.format(video_details['snippet']['publishedAt']))
       if Dict(video_details, 'statistics', 'likeCount') and int(video_details['statistics']['likeCount']) > 0:
         episode.rating                = 10*float(video_details['statistics']['likeCount'])/(float(video_details['statistics']['dislikeCount'])+float(video_details['statistics']['likeCount']));  Log('[ ] rating:   "{}"'.format(episode.rating))
-      i thumb and thumb in episode.thumbs:
-        episode.thumbs[thumb]           = Proxy.Media(picture, sort_order=1);                                                       Log.Info('[ ] thumbs:   "{}"'.format(thumb))
+      if thumb and thumb in episode.thumbs:
+        episode.thumbs[thumb]           = Proxy.Media(picture, sort_order=1);                                                     Log.Info('[ ] thumbs:   "{}"'.format(thumb))
         episode.thumbs.validate_keys([thumb])
       episode.duration                = ISO8601DurationToSeconds(video_details['contentDetails']['duration'])*1000;               Log.Info('[ ] duration: "{}"->"{}"'.format(video_details['contentDetails']['duration'], episode.duration))
       #videoId = Dict(video, 'contentDetails', 'videoId')
