@@ -408,7 +408,7 @@ def Update(metadata, media, lang, force, movie):
           if videoId and videoId in filename:
             episode.title                   = filterInvalidXMLChars(Dict(video, 'snippet', 'title'       ));     Log.Info('[ ] title:        {}'.format(Dict(video, 'snippet', 'title'       )))
             episode.summary                 = filterInvalidXMLChars(Dict(video, 'snippet', 'description' ));     Log.Info('[ ] description:  {}'.format(Dict(video, 'snippet', 'description' ).replace('\n', '. ')))
-            episode.originally_available_at = Datetime.ParseDate(Dict(video, 'snippet', 'publishedAt')).date();  Log.Info('[ ] publishedAt:  {}'.format(Dict(video, 'snippet', 'publishedAt' )))
+            episode.originally_available_at = Datetime.ParseDate(Dict(video, 'contentDetails', 'videoPublishedAt')).date();  Log.Info('[ ] publishedAt:  {}'.format(Dict(video, 'contentDetails', 'videoPublishedAt' )))
             thumb                           = Dict(video, 'snippet', 'thumbnails', 'standard', 'url') or Dict(video, 'snippet', 'thumbnails', 'high', 'url') or Dict(video, 'snippet', 'thumbnails', 'medium', 'url') or Dict(video, 'snippet', 'thumbnails', 'default', 'url')
             if thumb and thumb not in episode.thumbs:  episode.thumbs[thumb] = Proxy.Media(HTTP.Request(thumb).content, sort_order=1);                                Log.Info('[ ] thumbnail:    {}'.format(thumb))
             Log.Info('[ ] channelTitle: {}'.format(Dict(video, 'snippet', 'channelTitle')))
@@ -521,7 +521,7 @@ YOUTUBE_API_BASE_URL     = "https://www.googleapis.com/youtube/v3/"
 YOUTUBE_CHANNEL_ITEMS    = YOUTUBE_API_BASE_URL + 'search?order=date&part=snippet&type=video&maxResults=50&channelId={}&key={}' #NOT_USED
 YOUTUBE_CHANNEL_DETAILS  = YOUTUBE_API_BASE_URL + 'channels?part=snippet%2CcontentDetails%2Cstatistics%2CbrandingSettings&id={}&key={}'
 YOUTUBE_CHANNEL_REGEX    = Regex('\[(?:youtube\-)?(?P<id>UC[a-zA-Z0-9\-_]{22}|HC[a-zA-Z0-9\-_]{22})\]')
-YOUTUBE_PLAYLIST_ITEMS   = YOUTUBE_API_BASE_URL + 'playlistItems?part=snippet&maxResults=50&playlistId={}&key={}'
+YOUTUBE_PLAYLIST_ITEMS   = YOUTUBE_API_BASE_URL + 'playlistItems?part=snippet,contentDetails&maxResults=50&playlistId={}&key={}'
 YOUTUBE_PLAYLIST_DETAILS = YOUTUBE_API_BASE_URL + 'playlists?part=snippet,contentDetails&id={}&key={}'
 YOUTUBE_PLAYLIST_REGEX   = Regex('\[(?:youtube\-)?(?P<id>PL[^\[\]]{16}|PL[^\[\]]{32}|UU[^\[\]]{22}|FL[^\[\]]{22}|LP[^\[\]]{22}|RD[^\[\]]{22}|UC[^\[\]]{22}|HC[^\[\]]{22})\]',  Regex.IGNORECASE)  # https://regex101.com/r/37x8wI/2
 YOUTUBE_VIDEO_SEARCH     = YOUTUBE_API_BASE_URL + 'search?&maxResults=1&part=snippet&q={}&key={}'
