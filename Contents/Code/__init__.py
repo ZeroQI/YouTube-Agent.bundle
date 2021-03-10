@@ -93,11 +93,11 @@ def Start():
 ### Assign unique ID ###
 def Search(results, media, lang, manual, movie):
   
-  displayname     =                 os.path.basename(media.items[0].parts[0].file) if movie else media.show
-  filename        = urllib2.unquote(os.path.basename(media.items[0].parts[0].file) if movie else os.path.splitext(os.path.basename(media.filename))[0])
+  displayname = sanitize_path(os.path.basename(media.name if movie else media.show))
+  filename    = urllib2.unquote(sanitize_path(os.path.basename(media.items[0].parts[0].file if movie else media.filename)))  #urllib2.unquote() filename    = os.path.basename(media.items[0].parts[0].file) if movie else os.path.splitext(os.path.basename(media.filename))[0]
   dir             = GetMediaDir(media, movie)
   Log(u''.ljust(157, '='))
-  Log(u"Search() - dir: {}, filename: {}".format(dir, filename))
+  Log(u"Search() - dir: {}, filename: {}, displayname: {}, Prefs['metadata_source']".format(dir, filename, displayname, Prefs['metadata_source']))
     
   ### Try loading local JSON file if present
   json_filename = filename.rsplit('.', 1)[0] + ".info.json"
@@ -177,7 +177,7 @@ def Update(metadata, media, lang, force, movie):
 
     ### Movie - JSON call ###############################################################################################################
     json_filename = GetMediaDir(media, movie, True).rsplit('.', 1)[0] + ".info.json"
-    if os.path.exists(json_filename):
+    if os.path.exists(json_filename):  #Prefs['metadata_source'] == "JsonWithApiBackup":
       Log(u'Update using present json file - json_filename: {}'.format(json_filename))
       try:             json_video_details = JSON.ObjectFromString(Core.storage.load(json_filename))
       except IOError:  guid = None
@@ -408,7 +408,7 @@ def Update(metadata, media, lang, force, movie):
           if videoId and videoId in filename:
             episode.title                   = filterInvalidXMLChars(Dict(video, 'snippet', 'title'       ));     Log.Info('[ ] title:        {}'.format(Dict(video, 'snippet', 'title'       )))
             episode.summary                 = filterInvalidXMLChars(Dict(video, 'snippet', 'description' ));     Log.Info('[ ] description:  {}'.format(Dict(video, 'snippet', 'description' ).replace('\n', '. ')))
-            episode.originally_available_at = Datetime.ParseDate(Dict(video, 'contentDetails', 'videoPublishedAt')).date();  Log.Info('[ ] publishedAt:  {}'.format(Dict(video, 'contentDetails', 'videoPublishedAt' )))
+            episode.originally_available_at = Datetime.ParseDate(Dict(video, 'snippet', 'publishedAt')).date();  Log.Info('[ ] publishedAt:  {}'.format(Dict(video, 'snippet', 'publishedAt' )))
             thumb                           = Dict(video, 'snippet', 'thumbnails', 'standard', 'url') or Dict(video, 'snippet', 'thumbnails', 'high', 'url') or Dict(video, 'snippet', 'thumbnails', 'medium', 'url') or Dict(video, 'snippet', 'thumbnails', 'default', 'url')
             if thumb and thumb not in episode.thumbs:  episode.thumbs[thumb] = Proxy.Media(HTTP.Request(thumb).content, sort_order=1);                                Log.Info('[ ] thumbnail:    {}'.format(thumb))
             Log.Info('[ ] channelTitle: {}'.format(Dict(video, 'snippet', 'channelTitle')))
@@ -423,7 +423,10 @@ def Update(metadata, media, lang, force, movie):
           for root, dirnames, filenames in os.walk(series_root_folder):
             Log.Info(u'Directory {} contains {} files'.format(root, len(filenames)))  #for filename in filenames: Log.Info('File: {}'.format(filename))
             if json_filename in filenames :
-              json_video_details = JSON.ObjectFromString(Core.storage.load(os.path.join(root, json_filename)))  #with open(json_file_path) as f:  json_video_details = JSON.ObjectFromString(f.read())
+              json_file = os.path.join(root, json_filename)
+              try:  json_video_details = JSON.ObjectFromString(Core.storage.load(json_file))  #"JSONDecodeError: Unexpected end of input" if empty
+                #with open(json_file) as f:  json_video_details = JSON.ObjectFromString(f.read())
+              except: json_video_details = None
               if json_video_details:
                 Log.Info('Attempting to read metadata from {}'.format(os.path.join(root, json_filename)))
                 videoId = Dict(json_video_details, 'title')
@@ -520,10 +523,10 @@ PLEX_LIBRARY_URL         = "http://127.0.0.1:32400/library/sections/"    # Allow
 YOUTUBE_API_BASE_URL     = "https://www.googleapis.com/youtube/v3/"
 YOUTUBE_CHANNEL_ITEMS    = YOUTUBE_API_BASE_URL + 'search?order=date&part=snippet&type=video&maxResults=50&channelId={}&key={}' #NOT_USED
 YOUTUBE_CHANNEL_DETAILS  = YOUTUBE_API_BASE_URL + 'channels?part=snippet%2CcontentDetails%2Cstatistics%2CbrandingSettings&id={}&key={}'
-YOUTUBE_CHANNEL_REGEX    = Regex('\[(?:youtube\-)?(?P<id>UC[a-zA-Z0-9\-_]{22}|HC[a-zA-Z0-9\-_]{22})\]')
-YOUTUBE_PLAYLIST_ITEMS   = YOUTUBE_API_BASE_URL + 'playlistItems?part=snippet,contentDetails&maxResults=50&playlistId={}&key={}'
+YOUTUBE_CHANNEL_REGEX    = Regex('\[(?:youtube(|2)\-)?(?P<id>UC[a-zA-Z0-9\-_]{22}|HC[a-zA-Z0-9\-_]{22})\]')
+YOUTUBE_PLAYLIST_ITEMS   = YOUTUBE_API_BASE_URL + 'playlistItems?part=snippet&maxResults=50&playlistId={}&key={}'
 YOUTUBE_PLAYLIST_DETAILS = YOUTUBE_API_BASE_URL + 'playlists?part=snippet,contentDetails&id={}&key={}'
-YOUTUBE_PLAYLIST_REGEX   = Regex('\[(?:youtube\-)?(?P<id>PL[^\[\]]{16}|PL[^\[\]]{32}|UU[^\[\]]{22}|FL[^\[\]]{22}|LP[^\[\]]{22}|RD[^\[\]]{22}|UC[^\[\]]{22}|HC[^\[\]]{22})\]',  Regex.IGNORECASE)  # https://regex101.com/r/37x8wI/2
+YOUTUBE_PLAYLIST_REGEX   = Regex('\[(?:youtube(|3)\-)?(?P<id>PL[^\[\]]{16}|PL[^\[\]]{32}|UU[^\[\]]{22}|FL[^\[\]]{22}|LP[^\[\]]{22}|RD[^\[\]]{22}|UC[^\[\]]{22}|HC[^\[\]]{22})\]',  Regex.IGNORECASE)  # https://regex101.com/r/37x8wI/2
 YOUTUBE_VIDEO_SEARCH     = YOUTUBE_API_BASE_URL + 'search?&maxResults=1&part=snippet&q={}&key={}'
 YOUTUBE_json_video_details    = YOUTUBE_API_BASE_URL + 'videos?part=snippet,contentDetails,statistics&id={}&key={}'
 YOUTUBE_VIDEO_REGEX      = Regex('\[(?:youtube\-)?(?P<id>[a-z0-9\-_]{11})\]', Regex.IGNORECASE) # https://regex101.com/r/BFKkGc/3/
