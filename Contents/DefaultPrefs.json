@@ -1,6 +1,5 @@
 [
   { "id":"add_user_as_director",          "label":"Set YouTube usernames as director in metadata",  "type":"bool", "default":"false"                                     },
   { "id":"media_poster_source",           "label":"Media Poster",                                   "type":"enum", "default":"Channel", "values": ["Channel", "Episode"] },
-  { "id":"YouTube-Agent_youtube_api_key", "label":"YouTube API Key (Leave blank for Default Key)",  "type":"text", "default":"AIzaSyC2q8yjciNdlYRNdvwbb7NEcDxBkv1Cass"   },
-  { "id":"metadata_source",               "label":"Metadata Source",                                "type":"enum", "default":"JsonWithApiBackup", "values": ["JsonWithApiBackup", "ApiOnly"]}
+  { "id":"YouTube-Agent_youtube_api_key", "label":"YouTube API Key (put your own key)",             "type":"text", "default":"AIzaSyC2q8yjciNdlYRNdvwbb7NEcDxBkv1Cass"   },
 ]
