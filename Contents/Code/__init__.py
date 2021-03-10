@@ -97,7 +97,7 @@ def Search(results, media, lang, manual, movie):
   filename        = urllib2.unquote(os.path.basename(media.items[0].parts[0].file) if movie else os.path.splitext(os.path.basename(media.filename))[0])
   dir             = GetMediaDir(media, movie)
   Log(u''.ljust(157, '='))
-  Log(u"Search() - dir: {}, filename: {}, Prefs['metadata_source']".format(dir, filename, Prefs['metadata_source']))
+  Log(u"Search() - dir: {}, filename: {}".format(dir, filename))
     
   ### Try loading local JSON file if present
   json_filename = filename.rsplit('.', 1)[0] + ".info.json"
@@ -177,7 +177,7 @@ def Update(metadata, media, lang, force, movie):
 
     ### Movie - JSON call ###############################################################################################################
     json_filename = GetMediaDir(media, movie, True).rsplit('.', 1)[0] + ".info.json"
-    if os.path.exists(json_filename):  #Prefs['metadata_source'] == "JsonWithApiBackup":
+    if os.path.exists(json_filename):
       Log(u'Update using present json file - json_filename: {}'.format(json_filename))
       try:             json_video_details = JSON.ObjectFromString(Core.storage.load(json_filename))
       except IOError:  guid = None
