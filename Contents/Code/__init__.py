@@ -46,11 +46,11 @@ def GetLibraryRootPath(dir):
   for root in [os.sep.join(dir.split(os.sep)[0:x+2]) for x in range(0, dir.count(os.sep))]:
     if root in PLEX_LIBRARY:
       library = PLEX_LIBRARY[root]
-      path    = os.path.relpath(sanitize_path(dir), sanitize_path(root))
+      path    = os.path.relpath(dir, root)
       break
   else:  #401 no right to list libraries (windows)
     Log.Info(u'[!] Library access denied')
-    filename = os.path.join(sanitize_path(CachePath), '_Logs', '_root_.scanner.log')
+    filename = os.path.join(CachePath, '_Logs', '_root_.scanner.log')
     if os.path.isfile(filename):
       Log.Info(u'[!] ASS root scanner file present: "{}"'.format(filename))
       line = Core.storage.load(filename)  #with open(filename, 'rb') as file:  line=file.read()
@@ -62,6 +62,7 @@ def GetLibraryRootPath(dir):
 
 ###
 def json_load(url):
+  url = sanitize_path(url)
   iteration = 0
   json_page = {}
   json      = {}
@@ -247,16 +248,21 @@ def Update(metadata, media, lang, force, movie):
 
     ### Collection tag for grouping folders ###
     library, root, path = GetLibraryRootPath(dir)
-    Log.Info('[ ] library:    "{}"'.format(library))
-    Log.Info('[ ] root:       "{}"'.format(root   ))
-    Log.Info('[ ] path:       "{}"'.format(path   ))
-    Log.Info('[ ] dir:        "{}"'.format(dir    ))
+    #library = sanitize_path(library)
+    #root    = sanitize_path(root   )
+    #path    = sanitize_path(path   )
+    Log.Info(u'[ ] library:    "{}"'.format(library))
+    Log.Info(u'[ ] root:       "{}"'.format(root   ))
+    Log.Info(u'[ ] path:       "{}"'.format(path   ))
+    Log.Info(u'[ ] dir:        "{}"'.format(dir    ))
     metadata.studio = 'YouTube'
     if not path in ('_unknown_folder', '.'):
-      series_root_folder  = os.path.join(root, path.split(os.sep, 1)[0])
-      subfolder_count     = len([file for file in os.listdir(series_root_folder) if os.path.isdir(os.path.join(series_root_folder, file))])
-      Log.Info('[ ] series_root_folder: "{}"'.format(series_root_folder))
-      Log.Info('[ ] subfolder_count:    "{}"'.format(subfolder_count   ))
+      #Log.Info('[ ] series root folder:        "{}"'.format(os.path.join(root, path.split(os.sep, 1)[0])))
+      series_root_folder  = os.path.join(root, path.split(os.sep, 1)[0] if os.sep in path else path) 
+      Log.Info(u'[ ] series_root_folder: "{}"'.format(series_root_folder))
+      list_files      = os.listdir(series_root_folder) if os.path.exists(series_root_folder) else []
+      subfolder_count = len([file for file in list_files if os.path.isdir(os.path.join(series_root_folder, file))])
+      Log.Info(u'[ ] subfolder_count:    "{}"'.format(subfolder_count   ))
 
       ### Extract season and transparent folder to reduce complexity and use folder as serie name ###
       reverse_path, season_folder_first = list(reversed(path.split(os.sep))), False
@@ -298,23 +304,14 @@ def Update(metadata, media, lang, force, movie):
       except Exception as e:  Log.Info('[!] json_playlist_items exception: {}, url: {}'.format(e, YOUTUBE_PLAYLIST_ITEMS.format(guid, 'personal_key')))
       else:                   Log.Info('[?] json_playlist_items: {}'.format(json_playlist_items.keys()))
     
-    #NOT PLAYLIST NOR CHANNEL GUID
-    elif not (guid.startswith('UC') or guid.startswith('HC')):  
-      Log.Info('No GUID so random folder')
-      metadata.title = series_folder  #instead of path use series foldername
- 
     ### Series - Channel ###############################################################################################################
-    if channel_id.startswith('UC') or channel_id.startswith('HC'):
+    elif channel_id.startswith('UC') or channel_id.startswith('HC'):
       try:                    json_channel_details  = json_load( YOUTUBE_CHANNEL_DETAILS.format(channel_id, Prefs['YouTube-Agent_youtube_api_key']) )['items'][0]
       except Exception as e:  Log('exception: {}, url: {}'.format(e, guid))
       else:
         
-        if not len(guid)>2 and guid[0:2] in ('PL', 'UU', 'FL', 'LP', 'RD'):
-          Log.Info('[?] json_channel_details: {}'.format(json_channel_details.keys()))
-          Log.Info('[ ] title:                {}'.format(Dict(json_channel_details, 'snippet', 'title'      )))
-          title = Dict(json_channel_details, 'snippet', 'title')
-          metadata.title = title.encode('utf-8') if isinstance(title, unicode) else title 
-        
+        metadata.title = re.sub( "\s*\[.*?\]\s*"," ",series_folder)  #instead of path use series foldername
+        Log.Info('[ ] title:        "{}"'.format(metadata.title))
         if not Dict(json_playlist_details, 'snippet', 'description'):
           if Dict(json_channel_details, 'snippet', 'description'):  metadata.summary = sanitize_path(Dict(json_channel_details, 'snippet', 'description'))
           else:
@@ -337,14 +334,14 @@ def Update(metadata, media, lang, force, movie):
                 Log.Info('[?] json_channel_details: {}'.format(json_channel_details.keys()))
                 Log.Info('[ ] title:       "{}"'.format(Dict(json_channel_details, 'snippet', 'title'      )))
                 if not Dict(json_playlist_details, 'snippet', 'description'):
-                  if Dict(json_channel_details, 'snippet', 'description'):  metadata.summary =  Dict(json_channel_details, 'snippet', 'description');
+                  if Dict(json_channel_details, 'snippet', 'description'):  metadata.summary =  sanitize_path(Dict(json_channel_details, 'snippet', 'description'))
                   #elif guid.startswith('PL'):  metadata.summary = 'No Playlist nor Channel summary'
                   else:
-                    summary  = 'Channel with {} videos, '.format(Dict(json_channel_details, 'statistics', 'videoCount'     ))
-                    summary += '{} subscribers, '.format(Dict(json_channel_details, 'statistics', 'subscriberCount'))
-                    summary += '{} views'.format(Dict(json_channel_details, 'statistics', 'viewCount'      ))
+                    summary  = u'Channel with {} videos, '.format(Dict(json_channel_details, 'statistics', 'videoCount'     ))
+                    summary += u'{} subscribers, '.format(Dict(json_channel_details, 'statistics', 'subscriberCount'))
+                    summary += u'{} views'.format(Dict(json_channel_details, 'statistics', 'viewCount'      ))
                     metadata.summary = sanitize_path(summary) #or 'No Channel summary'
-                    Log.Info('[ ] summary:     "{}"'.format(Dict(json_channel_details, 'snippet', 'description').replace('\n', '. ')))  #
+                    Log.Info(u'[ ] summary:     "{}"'.format(Dict(json_channel_details, 'snippet', 'description').replace('\n', '. ')))  #
                 
                 if Dict(json_channel_details,'snippet','country') and Dict(json_channel_details,'snippet','country') not in metadata.countries:
                   metadata.countries.add(Dict(json_channel_details,'snippet','country'));  Log.Info('[ ] country: {}'.format(Dict(json_channel_details,'snippet','country') ))
@@ -372,13 +369,14 @@ def Update(metadata, media, lang, force, movie):
         else:    
           thumb         = Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvLowImageUrl' ) or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvMediumImageUrl') \
                        or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvHighImageUrl') or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvImageUrl'      )
-          if thumb and thumb not in metadata.art:      Log('[X] art:       {}'.format(thumb));  metadata.art [thumb] = Proxy.Media(HTTP.Request(thumb).content, sort_order=1)
-          else:                                        Log('[ ] art:       {}'.format(thumb))
-          if thumb and thumb not in metadata.banners:  Log('[X] banners:   {}'.format(thumb));  metadata.banners [thumb] = Proxy.Media(HTTP.Request(thumb).content, sort_order=1)
-          else:                                        Log('[ ] banners:   {}'.format(thumb))
+          if thumb and thumb not in metadata.art:      Log(u'[X] art:       {}'.format(thumb));  metadata.art [thumb] = Proxy.Media(HTTP.Request(thumb).content, sort_order=1)
+          else:                                        Log(u'[ ] art:       {}'.format(thumb))
+          if thumb and thumb not in metadata.banners:  Log(u'[X] banners:   {}'.format(thumb));  metadata.banners [thumb] = Proxy.Media(HTTP.Request(thumb).content, sort_order=1)
+          else:                                        Log(u'[ ] banners:   {}'.format(thumb))
           thumb_channel = Dict(json_channel_details, 'snippet', 'thumbnails', 'medium', 'url') or Dict(json_channel_details, 'snippet', 'thumbnails', 'high', 'url')   or Dict(json_channel_details, 'snippet', 'thumbnails', 'default', 'url')
           if thumb_channel and thumb_channel not in metadata.posters:
-            Log('[X] posters:   {}'.format(thumb_channel))
+            #thumb_channel = sanitize_path(thumb_channel)
+            Log(u'[X] posters:   {}'.format(thumb_channel))
             metadata.posters [thumb_channel] = Proxy.Media(HTTP.Request(thumb_channel).content, sort_order=1 if Prefs['media_poster_source']=='Channel' else 2)
             #metadata.posters.validate_keys([thumb_channel])
           else:                                        Log('[ ] posters:   {}'.format(thumb_channel))
@@ -387,9 +385,14 @@ def Update(metadata, media, lang, force, movie):
           role.role  = sanitize_path(Dict(json_channel_details, 'snippet', 'title'))
           role.name  = sanitize_path(Dict(json_channel_details, 'snippet', 'title'))
           role.photo = thumb_channel
-          Log.Info('[ ] role:        {}'.format(Dict(json_channel_details,'snippet','title')))
+          Log.Info(u'[ ] role:        {}'.format(Dict(json_channel_details,'snippet','title')))
           #if not Dict(json_playlist_details, 'snippet', 'publishedAt'):  metadata.originally_available_at = Datetime.ParseDate(Dict(json_channel_items, 'snippet', 'publishedAt')).date();  Log.Info('[ ] publishedAt:  {}'.format(Dict(json_channel_items, 'snippet', 'publishedAt' )))
            
+    #NOT PLAYLIST NOR CHANNEL GUID
+    else:  
+      Log.Info('No GUID so random folder')
+      metadata.title = series_folder  #instead of path use series foldername
+ 
     ### Season + Episode loop ###
     genre_array = {}
     episodes    = 0
