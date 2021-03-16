@@ -305,13 +305,14 @@ def Update(metadata, media, lang, force, movie):
       else:                   Log.Info('[?] json_playlist_items: {}'.format(json_playlist_items.keys()))
     
     ### Series - Channel ###############################################################################################################
-    elif channel_id.startswith('UC') or channel_id.startswith('HC'):
+    if channel_id.startswith('UC') or channel_id.startswith('HC'):
       try:                    json_channel_details  = json_load( YOUTUBE_CHANNEL_DETAILS.format(channel_id, Prefs['YouTube-Agent_youtube_api_key']) )['items'][0]
       except Exception as e:  Log('exception: {}, url: {}'.format(e, guid))
       else:
         
-        metadata.title = re.sub( "\s*\[.*?\]\s*"," ",series_folder)  #instead of path use series foldername
-        Log.Info('[ ] title:        "{}"'.format(metadata.title))
+        if not metadata.title:
+          metadata.title = re.sub( "\s*\[.*?\]\s*"," ",series_folder)  #instead of path use series foldername
+          Log.Info('[ ] title:        "{}"'.format(metadata.title))
         if not Dict(json_playlist_details, 'snippet', 'description'):
           if Dict(json_channel_details, 'snippet', 'description'):  metadata.summary = sanitize_path(Dict(json_channel_details, 'snippet', 'description'))
           else:
@@ -354,7 +355,8 @@ def Update(metadata, media, lang, force, movie):
                 Log.Info('[ ] role:        {}'.format(Dict(json_channel_details,'snippet','title')))
                 
                 thumb = Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvLowImageUrl' ) or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvMediumImageUrl') \
-                  or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvHighImageUrl') or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvImageUrl'      )
+                  or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvHighImageUrl') or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvImageUrl'      ) \
+                  or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerExternalUrl')
                 if thumb and thumb not in metadata.art:      Log('[X] art:       {}'.format(thumb));  metadata.art [thumb] = Proxy.Media(HTTP.Request(thumb).content, sort_order=1)
                 else:                                        Log('[ ] art:       {}'.format(thumb))
                 if thumb and thumb not in metadata.banners:  Log('[X] banners:   {}'.format(thumb));  metadata.banners [thumb] = Proxy.Media(HTTP.Request(thumb).content, sort_order=1)
@@ -368,7 +370,8 @@ def Update(metadata, media, lang, force, movie):
         ### Cast comes from channel
         else:    
           thumb         = Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvLowImageUrl' ) or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvMediumImageUrl') \
-                       or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvHighImageUrl') or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvImageUrl'      )
+                       or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvHighImageUrl') or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvImageUrl'      ) \
+                       or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerExternalUrl')
           if thumb and thumb not in metadata.art:      Log(u'[X] art:       {}'.format(thumb));  metadata.art [thumb] = Proxy.Media(HTTP.Request(thumb).content, sort_order=1)
           else:                                        Log(u'[ ] art:       {}'.format(thumb))
           if thumb and thumb not in metadata.banners:  Log(u'[X] banners:   {}'.format(thumb));  metadata.banners [thumb] = Proxy.Media(HTTP.Request(thumb).content, sort_order=1)
