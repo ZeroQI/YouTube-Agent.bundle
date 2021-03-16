@@ -245,7 +245,7 @@ def Update(metadata, media, lang, force, movie):
   
   ### TV series Library ###
   else:
-
+    title=""
     ### Collection tag for grouping folders ###
     library, root, path = GetLibraryRootPath(dir)
     #library = sanitize_path(library)
@@ -292,7 +292,8 @@ def Update(metadata, media, lang, force, movie):
       else:
         Log.Info('[?] json_playlist_details: {}'.format(json_playlist_details.keys()))
         channel_id                       = Dict(json_playlist_details, 'snippet', 'channelId');                               Log.Info('[ ] channel_id: "{}"'.format(channel_id))
-        metadata.title                   = sanitize_path(Dict(json_playlist_details, 'snippet', 'title'));            Log.Info('[ ] title:      "{}"'.format(metadata.title))
+        title                            = sanitize_path(Dict(json_playlist_details, 'snippet', 'title'));                    Log.Info('[ ] title:      "{}"'.format(metadata.title))
+        if title: metadata.title = title
         metadata.originally_available_at = Datetime.ParseDate(Dict(json_playlist_details, 'snippet', 'publishedAt')).date();  Log.Info('[ ] publishedAt:  {}'.format(Dict(json_playlist_details, 'snippet', 'publishedAt' )))
         metadata.summary                 = Dict(json_playlist_details, 'snippet', 'description');                             Log.Info('[ ] summary:     "{}"'.format((Dict(json_playlist_details, 'snippet', 'description').replace('\n', '. '))))
         thumb = Dict(json_playlist_details, 'snippet', 'thumbnails', 'standard', 'url') or Dict(json_playlist_details, 'snippet', 'thumbnails', 'high', 'url') or Dict(json_playlist_details, 'snippet', 'thumbnails', 'medium', 'url') or Dict(json_playlist_details, 'snippet', 'thumbnails', 'default', 'url')
@@ -310,9 +311,10 @@ def Update(metadata, media, lang, force, movie):
       except Exception as e:  Log('exception: {}, url: {}'.format(e, guid))
       else:
         
-        if not metadata.title:
-          metadata.title = re.sub( "\s*\[.*?\]\s*"," ",series_folder)  #instead of path use series foldername
-          Log.Info('[ ] title:        "{}"'.format(metadata.title))
+        if not title:
+          title          = re.sub( "\s*\[.*?\]\s*"," ",series_folder)  #instead of path use series foldername
+          metadata.title = title
+        Log.Info('[ ] title:        "{}", metadata.title: "{}"'.format(title, metadata.title))
         if not Dict(json_playlist_details, 'snippet', 'description'):
           if Dict(json_channel_details, 'snippet', 'description'):  metadata.summary = sanitize_path(Dict(json_channel_details, 'snippet', 'description'))
           else:
@@ -451,10 +453,10 @@ def Update(metadata, media, lang, force, movie):
                   Log.Info(u'[ ] thumbs:   "{}"'.format(thumb))
                   episode.thumbs[thumb] = Proxy.Media(picture, sort_order=1)
                   episode.thumbs.validate_keys([thumb])
-                  if first: 
-                    first                   = False
-                    metadata.posters[thumb] = Proxy.Media(picture, sort_order=1)
-                    Log.Info(u'[ ] posters: {}'.format(thumb))
+                  #if first: 
+                  #  first                   = False
+                  #  metadata.posters[thumb] = Proxy.Media(picture, sort_order=1)
+                  #  Log.Info(u'[ ] posters: {}'.format(thumb))
                   
                 episode.title                   = sanitize_path(Dict(json_video_details, 'title'));            Log.Info(u'[ ] title:    "{}"'.format(Dict(json_video_details, 'title')))
                 episode.summary                 = sanitize_path(Dict(json_video_details, 'description'));      Log.Info(u'[ ] summary:  "{}"'.format(Dict(json_video_details, 'description').replace('\n', '. ')))
@@ -497,9 +499,9 @@ def Update(metadata, media, lang, force, movie):
                   episode.thumbs[thumb]         = Proxy.Media(picture, sort_order=1);                                                     Log.Info('[ ] thumbs:   "{}"'.format(thumb))
                   episode.thumbs.validate_keys([thumb])
                   Log.Info(u'[ ] Thumb: {}'.format(thumb))
-                  if first:
-                    first = False
-                    metadata.posters[thumb] = Proxy.Media(picture, sort_order=1)
+                  #if first:
+                  #  first = False
+                  #  metadata.posters[thumb] = Proxy.Media(picture, sort_order=1)
                 if Dict(json_video_details, 'snippet',  'channelTitle') and Dict(json_video_details, 'snippet',  'channelTitle') not in [role_obj.name for role_obj in episode.directors]:
                   meta_director       = episode.directors.new()
                   meta_director.name  = sanitize_path(Dict(json_video_details, 'snippet',  'channelTitle'))
