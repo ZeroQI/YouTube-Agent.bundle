@@ -438,7 +438,6 @@ def Update(metadata, media, lang, force, movie):
             if json_filename in filenames :
               json_file = os.path.join(root, json_filename)
               try:  json_video_details = JSON.ObjectFromString(Core.storage.load(json_file))  #"JSONDecodeError: Unexpected end of input" if empty
-                #with open(json_file) as f:  json_video_details = JSON.ObjectFromString(f.read())
               except: json_video_details = None
               if json_video_details:
                 Log.Info('Attempting to read metadata from {}'.format(os.path.join(root, json_filename)))
@@ -453,14 +452,10 @@ def Update(metadata, media, lang, force, movie):
                   Log.Info(u'[ ] thumbs:   "{}"'.format(thumb))
                   episode.thumbs[thumb] = Proxy.Media(picture, sort_order=1)
                   episode.thumbs.validate_keys([thumb])
-                  #if first: 
-                  #  first                   = False
-                  #  metadata.posters[thumb] = Proxy.Media(picture, sort_order=1)
-                  #  Log.Info(u'[ ] posters: {}'.format(thumb))
                   
                 episode.title                   = sanitize_path(Dict(json_video_details, 'title'));            Log.Info(u'[ ] title:    "{}"'.format(Dict(json_video_details, 'title')))
                 episode.summary                 = sanitize_path(Dict(json_video_details, 'description'));      Log.Info(u'[ ] summary:  "{}"'.format(Dict(json_video_details, 'description').replace('\n', '. ')))
-                episode.originally_available_at = Datetime.ParseDate(Dict(json_video_details, 'upload_date')).date();  Log.Info(u'[ ] date:     "{}"'.format(Dict(json_video_details, 'upload_date')))
+                if len(e)>3: episode.originally_available_at = Datetime.ParseDate(Dict(json_video_details, 'upload_date')).date();  Log.Info(u'[ ] date:     "{}"'.format(Dict(json_video_details, 'upload_date')))
                 episode.duration                = int(Dict(json_video_details, 'duration'));                           Log.Info(u'[ ] duration: "{}"'.format(episode.duration))
                 if Dict(json_video_details, 'likeCount') and int(Dict(json_video_details, 'like_count')) > 0:
                   episode.rating                = float(10*int(Dict(json_video_details, 'like_count'))/(int(Dict(json_video_details, 'dislike_count'))+int(Dict(json_video_details, 'like_count'))));  Log('[ ] rating:   "{}"'.format(episode.rating))
@@ -490,7 +485,7 @@ def Update(metadata, media, lang, force, movie):
                 thumb                           = Dict(json_video_details, 'snippet', 'thumbnails', 'standard', 'url') or Dict(json_video_details, 'snippet', 'thumbnails', 'high', 'url') or Dict(json_video_details, 'snippet', 'thumbnails', 'medium', 'url') or Dict(json_video_details, 'snippet', 'thumbnails', 'default', 'url')
                 episode.title                   = sanitize_path(json_video_details['snippet']['title']);                                 Log.Info('[ ] title:    "{}"'.format(json_video_details['snippet']['title']))
                 episode.summary                 = sanitize_path(json_video_details['snippet']['description']);                           Log.Info('[ ] summary:  "{}"'.format(json_video_details['snippet']['description'].replace('\n', '. ')))
-                episode.originally_available_at = Datetime.ParseDate(json_video_details['snippet']['publishedAt']).date();                       Log.Info('[ ] date:     "{}"'.format(json_video_details['snippet']['publishedAt']))
+                if len(e)>3:  episode.originally_available_at = Datetime.ParseDate(json_video_details['snippet']['publishedAt']).date();                       Log.Info('[ ] date:     "{}"'.format(json_video_details['snippet']['publishedAt']))
                 episode.duration                = ISO8601DurationToSeconds(json_video_details['contentDetails']['duration'])*1000;               Log.Info('[ ] duration: "{}"->"{}"'.format(json_video_details['contentDetails']['duration'], episode.duration))
                 if Dict(json_video_details, 'statistics', 'likeCount') and int(json_video_details['statistics']['likeCount']) > 0:
                   episode.rating                = 10*float(json_video_details['statistics']['likeCount'])/(float(json_video_details['statistics']['dislikeCount'])+float(json_video_details['statistics']['likeCount']));  Log('[ ] rating:   "{}"'.format(episode.rating))
@@ -499,9 +494,6 @@ def Update(metadata, media, lang, force, movie):
                   episode.thumbs[thumb]         = Proxy.Media(picture, sort_order=1);                                                     Log.Info('[ ] thumbs:   "{}"'.format(thumb))
                   episode.thumbs.validate_keys([thumb])
                   Log.Info(u'[ ] Thumb: {}'.format(thumb))
-                  #if first:
-                  #  first = False
-                  #  metadata.posters[thumb] = Proxy.Media(picture, sort_order=1)
                 if Dict(json_video_details, 'snippet',  'channelTitle') and Dict(json_video_details, 'snippet',  'channelTitle') not in [role_obj.name for role_obj in episode.directors]:
                   meta_director       = episode.directors.new()
                   meta_director.name  = sanitize_path(Dict(json_video_details, 'snippet',  'channelTitle'))
