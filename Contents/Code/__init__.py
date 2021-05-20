@@ -358,7 +358,8 @@ def Update(metadata, media, lang, force, movie):
                 
                 thumb = Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvLowImageUrl' ) or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvMediumImageUrl') \
                   or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvHighImageUrl') or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvImageUrl'      )
-                if not thumb: thumb = '{}=s1920'.format(Dict(json_channel_details, 'brandingSettings', 'image', 'bannerExternalUrl'))
+                external_banner_url = Dict(json_channel_details, 'brandingSettings', 'image', 'bannerExternalUrl')
+                if not thumb and external_banner_url: thumb = '{}=s1920'.format(external_banner_url)
                 if thumb and thumb not in metadata.art:      Log('[X] art:       {}'.format(thumb));  metadata.art [thumb] = Proxy.Media(HTTP.Request(thumb).content, sort_order=1)
                 else:                                        Log('[ ] art:       {}'.format(thumb))
                 if thumb and thumb not in metadata.banners:  Log('[X] banners:   {}'.format(thumb));  metadata.banners [thumb] = Proxy.Media(HTTP.Request(thumb).content, sort_order=1)
@@ -373,7 +374,8 @@ def Update(metadata, media, lang, force, movie):
         else:    
           thumb         = Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvLowImageUrl' ) or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvMediumImageUrl') \
                        or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvHighImageUrl') or Dict(json_channel_details, 'brandingSettings', 'image', 'bannerTvImageUrl'      )
-          if not thumb: thumb = '{}=s1920'.format(Dict(json_channel_details, 'brandingSettings', 'image', 'bannerExternalUrl'))
+          external_banner_url = Dict(json_channel_details, 'brandingSettings', 'image', 'bannerExternalUrl')
+          if not thumb and external_banner_url: thumb = '{}=s1920'.format(external_banner_url)
           if thumb and thumb not in metadata.art:      Log(u'[X] art:       {}'.format(thumb));  metadata.art [thumb] = Proxy.Media(HTTP.Request(thumb).content, sort_order=1)
           else:                                        Log(u'[ ] art:       {}'.format(thumb))
           if thumb and thumb not in metadata.banners:  Log(u'[X] banners:   {}'.format(thumb));  metadata.banners [thumb] = Proxy.Media(HTTP.Request(thumb).content, sort_order=1)
