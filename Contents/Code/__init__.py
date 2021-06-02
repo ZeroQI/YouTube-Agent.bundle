@@ -443,7 +443,7 @@ def Update(metadata, media, lang, force, movie):
               except: json_video_details = None
               if json_video_details:
                 Log.Info('Attempting to read metadata from {}'.format(os.path.join(root, json_filename)))
-                videoId = Dict(json_video_details, 'title')
+                videoId = Dict(json_video_details, 'id')
                 Log.Info('# videoId [{}] not in Playlist/channel item list so loading json_video_details'.format(videoId))
                 Log.Info('[?] link:     "https://www.youtube.com/watch?v={}"'.format(videoId))
                 thumb, picture = img_load(series_root_folder, filename)  #Load locally
