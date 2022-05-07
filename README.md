@@ -120,7 +120,8 @@ Made it into a series agent straight away...
 Installation
 ============
 
-The plugin code needs to be put into `Plex Media Server/Plug-ins` folder.
+The plugin code needs to be put into `Plex Media Server/Plug-ins` folder:
+- https://support.plex.tv/articles/201187656-how-do-i-manually-install-a-plugin/
 
 Here is how to find the Plug-in folder location:
 - https://support.plex.tv/hc/en-us/articles/201106098-How-do-I-find-the-Plug-Ins-folder-
