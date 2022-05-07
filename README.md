@@ -104,10 +104,12 @@ Made it into a series agent straight away...
 Installation
 ============
 
-Here is how to find the plug-in folder location:
-https://support.plex.tv/hc/en-us/articles/201106098-How-do-I-find-the-Plug-Ins-folder-
+The plugin code needs to be put into `Plex Media Server/Plug-ins` folder.
 
-Plex main folder location:
+Here is how to find the Plug-in folder location:
+- https://support.plex.tv/hc/en-us/articles/201106098-How-do-I-find-the-Plug-Ins-folder-
+
+Plex main folder location could be one of:
 
     * '%LOCALAPPDATA%\Plex Media Server\'                                        # Windows Vista/7/8
     * '%USERPROFILE%\Local Settings\Application Data\Plex Media Server\'         # Windows XP, 2003, Home Server
@@ -123,8 +125,10 @@ Plex main folder location:
     * '/raid0/data/module/Plex/sys/Plex Media Server/',                          # Thecus
     * '/raid0/data/PLEX_CONFIG/Plex Media Server/'                               # Thecus Plex community    
 
-Get the latest source zip in github release for hama https://github.com/ZeroQI/Youtube-Agent.bundle > "Clone or download > Download Zip
-Folders Youtube-Agent.bundle-master.zip and copy inside folder Youtube-Agent.bundle-master in plug-ins folders but rename to "Youtube-Agent.bundle" (remove -master) :
+To obtain the code:
+1. Download the Zip file: https://github.com/ZeroQI/YouTube-Agent.bundle/archive/refs/heads/master.zip
+2. Unpack the downloaded Zip and rename the contents as `Youtube-Agent.bundle` (remove `-master`)
+3. Place it inside `Plug-ins` folder
 
 Troubleshooting:
 ================
