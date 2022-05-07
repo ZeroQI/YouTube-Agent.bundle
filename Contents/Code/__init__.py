@@ -60,9 +60,14 @@ def GetLibraryRootPath(dir):
     else:  Log.Info(u'[!] ASS root scanner file missing: "{}"'.format(filename))
   return library, root, path
 
+
+def youtube_api_key():
+  return Prefs['YouTube-Agent_youtube_api_key']
+
+
 ###
 def json_load(template, *args):
-  url = template.format(*args + tuple([Prefs['YouTube-Agent_youtube_api_key']]))
+  url = template.format(*args + tuple([youtube_api_key()]))
   url = sanitize_path(url)
   iteration = 0
   json_page = {}
