@@ -20,7 +20,7 @@ YouTube IDs
 - Video id: 11 chars long 0-9 a-Z _ -
 
 Requirements
-- Do create your own YouTube API key and replace in ASS code and agent settings
+- Do create your own YouTube API key and replace in [Absolute Series Scanner] (ASS) code and agent settings
 - Please use the Absolute Series Scanner to scan your media and leave the YouTube id in the series/movie title
 - leave the YouTube video ID on every file
 - Playlist (preffered) id OR Channel id on series foldername (as Search() need to assign an id to the series)
@@ -51,7 +51,7 @@ Movie Library Fields supported:
 - genres (many? to test)
 - directors (1)
 
-Exemple
+Example
 =======
 
 CaRtOoNz [UCdQWs2nw6w77Rw0t-37a4OA]/
@@ -134,3 +134,5 @@ Support thread for agent:
 Donation link:
 ==============
 PayPal.Me/ZeroQI or https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=S8CUKCX4CWBBG&lc=IE&item_name=Plex%20movies%20and%20TV%20series%20Youtube%20Agent&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted
+
+[Absolute Series Scanner]: https://github.com/ZeroQI/Absolute-Series-Scanner
