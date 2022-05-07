@@ -130,7 +130,6 @@ def Search(results, media, lang, manual, movie):
   else:    
     s = media.seasons.keys()[0] if media.seasons.keys()[0]!='0' else media.seasons.keys()[1] if len(media.seasons.keys()) >1 else None
     if s:
-      e      = media.seasons[s].episodes.keys()[0]
       result = YOUTUBE_PLAYLIST_REGEX.search(os.path.basename(os.path.dirname(dir)))
       guid   = result.group('id') if result else ''
       if result or os.path.exists(os.path.join(dir, 'youtube.id')):
@@ -166,7 +165,6 @@ def Update(metadata, media, lang, force, movie):
   dir                        = sanitize_path(GetMediaDir(media, movie))
   channel_id                 = guid if guid.startswith('UC') or guid.startswith('HC') else ''
   channel_title              = ""
-  json                       = {}
   json_playlist_details      = {}
   json_playlist_items        = {}
   json_channel_items         = {}
@@ -402,10 +400,8 @@ def Update(metadata, media, lang, force, movie):
     ### Season + Episode loop ###
     genre_array = {}
     episodes    = 0
-    first       = True
-    
+
     for s in sorted(media.seasons, key=natural_sort_key):
-      season = metadata.seasons[s]
       Log.Info(u"".ljust(157, '='))
       Log.Info(u"Season: {:>2}".format(s))
     
