@@ -24,7 +24,7 @@ The plugin code needs to be put into `Plex Media Server/Plug-ins` folder:
 - https://support.plex.tv/articles/201187656-how-do-i-manually-install-a-plugin/
 
 Here is how to find the Plug-in folder location:
-- https://support.plex.tv/hc/en-us/articles/201106098-How-do-I-find-the-Plug-Ins-folder-
+- https://support.plex.tv/articles/201106098-how-do-i-find-the-plug-ins-folder/
 
 Plex main folder location could be one of:
 
