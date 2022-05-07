@@ -529,7 +529,8 @@ class YouTubeMovieAgent(Agent.Movies):
   def update (self, metadata, media, lang, force ):  Update (metadata, media, lang, force,  True)
 
 ### Variables ###
-PlexRoot                 = os.path.abspath(os.path.join(os.path.dirname(inspect.getfile(inspect.currentframe())), "..", "..", "..", ".."))
+PluginDir                = os.path.abspath(os.path.join(os.path.dirname(inspect.getfile(inspect.currentframe())), "..", ".."))
+PlexRoot                 = os.path.abspath(os.path.join(PluginDir, "..", ".."))
 CachePath                = os.path.join(PlexRoot, "Plug-in Support", "Data", "com.plexapp.agents.hama", "DataItems")
 PLEX_LIBRARY             = {}
 PLEX_LIBRARY_URL         = "http://127.0.0.1:32400/library/sections/"    # Allow to get the library name to get a log per library https://support.plex.tv/hc/en-us/articles/204059436-Finding-your-account-token-X-Plex-Token
