@@ -61,7 +61,8 @@ def GetLibraryRootPath(dir):
   return library, root, path
 
 ###
-def json_load(url):
+def json_load(template, *args):
+  url = template.format(*args + tuple([Prefs['YouTube-Agent_youtube_api_key']]))
   url = sanitize_path(url)
   iteration = 0
   json_page = {}
@@ -142,7 +143,7 @@ def Search(results, media, lang, manual, movie):
       else:  Log('search() - id not found')
   
   try:
-    json_video_details = json_load(YOUTUBE_VIDEO_SEARCH.format(String.Quote(filename, usePlus=False), Prefs['YouTube-Agent_youtube_api_key']))
+    json_video_details = json_load(YOUTUBE_VIDEO_SEARCH, String.Quote(filename, usePlus=False))
     if Dict(json_video_details, 'pageInfo', 'totalResults'):
       Log.Info(u'filename: "{}", title:        "{}"'.format(filename, Dict(json_video_details, 'items', 0, 'snippet', 'title')))
       Log.Info(u'filename: "{}", channelTitle: "{}"'.format(filename, Dict(json_video_details, 'items', 0, 'snippet', 'channelTitle')))
@@ -217,7 +218,7 @@ def Update(metadata, media, lang, force, movie):
 
     ### Movie - API call ################################################################################################################
     Log(u'update() using api - guid: {}, dir: {}, metadata.id: {}'.format(guid, dir, metadata.id))
-    try:     json_video_details = json_load( YOUTUBE_json_video_details.format(guid, Prefs['YouTube-Agent_youtube_api_key']) )['items'][0]
+    try:     json_video_details = json_load(YOUTUBE_json_video_details, guid)['items'][0]
     except:  Log(u'json_video_details - Could not retrieve data from YouTube for: ' + guid)
     else:
       Log('Movie mode - json_video_details - Loaded video details from: "{}"'.format(YOUTUBE_json_video_details, 'personal_key'))
@@ -285,7 +286,7 @@ def Update(metadata, media, lang, force, movie):
     ### Series - Playlist ###############################################################################################################
     if len(guid)>2 and guid[0:2] in ('PL', 'UU', 'FL', 'LP', 'RD'):
       Log.Info('[?] json_playlist_details')
-      try:                    json_playlist_details = json_load(YOUTUBE_PLAYLIST_DETAILS.format(guid, Prefs['YouTube-Agent_youtube_api_key']))['items'][0]
+      try:                    json_playlist_details = json_load(YOUTUBE_PLAYLIST_DETAILS, guid)['items'][0]
       except Exception as e:  Log('[!] json_playlist_details exception: {}, url: {}'.format(e, YOUTUBE_PLAYLIST_DETAILS.format(guid, 'personal_key')))
       else:
         Log.Info('[?] json_playlist_details: {}'.format(json_playlist_details.keys()))
@@ -296,7 +297,7 @@ def Update(metadata, media, lang, force, movie):
         metadata.summary                 = Dict(json_playlist_details, 'snippet', 'description');                             Log.Info('[ ] summary:     "{}"'.format((Dict(json_playlist_details, 'snippet', 'description').replace('\n', '. '))))
         
       Log.Info('[?] json_playlist_items')
-      try:                    json_playlist_items = json_load( YOUTUBE_PLAYLIST_ITEMS.format(guid, Prefs['YouTube-Agent_youtube_api_key']) )
+      try:                    json_playlist_items = json_load(YOUTUBE_PLAYLIST_ITEMS, guid)
       except Exception as e:  Log.Info('[!] json_playlist_items exception: {}, url: {}'.format(e, YOUTUBE_PLAYLIST_ITEMS.format(guid, 'personal_key')))
       else:
         Log.Info('[?] json_playlist_items: {}'.format(json_playlist_items.keys()))
@@ -307,7 +308,7 @@ def Update(metadata, media, lang, force, movie):
     
     ### Series - Channel ###############################################################################################################
     if channel_id.startswith('UC') or channel_id.startswith('HC'):
-      try:                    json_channel_details  = json_load( YOUTUBE_CHANNEL_DETAILS.format(channel_id, Prefs['YouTube-Agent_youtube_api_key']) )['items'][0]
+      try:                    json_channel_details  = json_load(YOUTUBE_CHANNEL_DETAILS, channel_id)['items'][0]
       except Exception as e:  Log('exception: {}, url: {}'.format(e, guid))
       else:
         
@@ -331,7 +332,7 @@ def Update(metadata, media, lang, force, movie):
           with open(os.path.join(dir, 'youtube.id')) as f:
             metadata.roles.clear()
             for line in f.readlines():
-              try:                    json_channel_details = json_load( YOUTUBE_CHANNEL_DETAILS.format(line.rstrip(), Prefs['YouTube-Agent_youtube_api_key']) )['items'][0]
+              try:                    json_channel_details = json_load(YOUTUBE_CHANNEL_DETAILS, line.rstrip())['items'][0]
               except Exception as e:  Log('exception: {}, url: {}'.format(e, guid))
               else:
                 Log.Info('[?] json_channel_details: {}'.format(json_channel_details.keys()))
@@ -480,7 +481,7 @@ def Update(metadata, media, lang, force, movie):
             if result:
               videoId = result.group('id')
               Log.Info(u'# videoId [{}] not in Playlist/channel item list so loading json_video_details'.format(videoId))
-              try:                    json_video_details = json_load(YOUTUBE_json_video_details.format(videoId, Prefs['YouTube-Agent_youtube_api_key']))['items'][0]
+              try:                    json_video_details = json_load(YOUTUBE_json_video_details, videoId)['items'][0]
               except Exception as e:  Log('Error: "{}"'.format(e))
               else:
                 Log.Info('[?] link:     "https://www.youtube.com/watch?v={}"'.format(videoId))
