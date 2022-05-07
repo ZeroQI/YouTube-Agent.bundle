@@ -10,6 +10,7 @@ To download a playlist:
 Additionally, you may want to use:
 
 1. `--restrict-filenames`:
+   Necessary, when storing media files on Windows filesystem.
    Restrict filenames to only ASCII characters, and avoid "&" and
    spaces in filenames, makes the filenames slightly messy but no crash due to
    unsupported character.
