@@ -62,6 +62,9 @@ Movie Library Fields supported:
 Exemple
 =======
 
+This shows example file layout:
+
+```
 CaRtOoNz [UCdQWs2nw6w77Rw0t-37a4OA]/
 - Ben and Ed/
   - Ben and Ed _ 'My Zombie Best Friend!' (I Didn't Need Those Legs Anyway!) [fRFr7L_qgEo].mkv
@@ -77,6 +80,7 @@ H2ODelirious [UCClNRixXlagwAd--5MwJKCw]/
 - Golf With Your Friends/
   - Golf With Your Friends - 1st Time Playing! 'Professionals' [wxS52xI_W_Y].mkv
   - Golf With Your Friends - Hitting Balls, Stroking Out! [GdLon0CCEXE].mkv
+```
 
 History
 =======
