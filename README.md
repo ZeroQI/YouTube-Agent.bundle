@@ -171,8 +171,15 @@ Support thread for agent:
 - https://github.com/ZeroQI/YouTube-Agent.bundle/issues (proven or confident enough it's a bug. Include the symptoms, the logs mentionned above)
 - https://forums.plex.tv/discussion/83106/rel-youtube-metadata-agent/p5 (not sure if bug, if bug will create a gihub issue ticket)
 
-Donation link:
-==============
-PayPal.Me/ZeroQI or https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=S8CUKCX4CWBBG&lc=IE&item_name=Plex%20movies%20and%20TV%20series%20Youtube%20Agent&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted
+Donation
+========
 
+You can choose either:
+
+1. Pay link: https://PayPal.Me/ZeroQI
+1. Donate link: A [PayPal] payment, but flagged as donation.
+   Having money sent as donation you could be eligible for tax return depending
+   on the country you pay taxes for.
+
+[PayPal]: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=S8CUKCX4CWBBG&lc=IE&item_name=Plex%20movies%20and%20TV%20series%20Youtube%20Agent&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted
 [Absolute Series Scanner]: https://github.com/ZeroQI/Absolute-Series-Scanner
