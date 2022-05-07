@@ -62,6 +62,17 @@ def GetLibraryRootPath(dir):
 
 
 def youtube_api_key():
+  path = os.path.join(PluginDir, "youtube-key.txt")
+  if os.path.isfile(path):
+    value = Data.Load(path)
+    if value:
+      value = value.strip()
+    if value:
+      Log.Debug(u"Loaded token from youtube-token.txt file")
+
+      return value
+
+  # Fall back to Library preference
   return Prefs['YouTube-Agent_youtube_api_key']
 
 
