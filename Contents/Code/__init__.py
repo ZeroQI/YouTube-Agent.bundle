@@ -2,7 +2,6 @@
 
 ### Imports ###
 import sys                  # getdefaultencoding, getfilesystemencoding, platform, argv
-import fnmatch              # filter
 import os                   # path.abspath, join, dirname
 import re                   #
 import inspect              # getfile, currentframe
