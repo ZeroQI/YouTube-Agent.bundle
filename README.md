@@ -51,7 +51,7 @@ Movie Library Fields supported:
 - genres (many? to test)
 - directors (1)
 
-Exemple
+Example
 =======
 
 CaRtOoNz [UCdQWs2nw6w77Rw0t-37a4OA]/
