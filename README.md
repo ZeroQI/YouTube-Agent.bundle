@@ -47,6 +47,7 @@ To obtain the code:
 1. Unpack the downloaded Zip and rename the contents as `Youtube-Agent.bundle` (remove `-master`)
 1. Place it inside `Plug-ins` folder
 1. Restart Plex Media Server to make sure that the new plugin will be loaded.
+1. [Create your own YouTube API token](#youtube-api-key) (recommended)
 
 Usage
 =====
