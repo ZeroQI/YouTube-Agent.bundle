@@ -148,6 +148,26 @@ To obtain the code:
 3. Place it inside `Plug-ins` folder
 4. Restart Plex Media Server to make sure that the new plugin will be loaded.
 
+YouTube API key
+===============
+
+To avoid depleting usage quota of the built-in API key, you should register
+your own YouTube API key and configure this plugin to use it.
+
+When quota has reached, all users (including you) using default API key will
+have metadata requests blocked.
+
+The setup is moderately complicated:
+1. Go to [Google Developer Console].
+1. From the top bar choose or create a new project
+1. Follow "API keys" instructions from [registering an application]
+1. Skip the API restrictions part
+1. Copy the API key from "API key created" dialog
+1. Use that value in Plex Library settings
+
+[Google Developer Console]: https://console.developers.google.com/
+[registering an application]: https://developers.google.com/youtube/registering_an_application
+
 Troubleshooting:
 ================
 If you ask for something already answered in the readme, or post scanner issues on the agent page or vice-versa, please donate (will be refered to as the RTFM tax)
