@@ -1,6 +1,24 @@
 # YouTube-Agent.bundle: Plex Movie & TV Series library agent
 
-Please respect Youtube Terms and conditions: https://www.youtube.com/t/terms
+This is a Metadata Agent for downloaded YouTube videos. It works by looking up
+metadata on YouTube using the YouTube video id. It is important to have this id
+in the filename, otherwise this agent can't do the lookup.
+This plugin also supports looking up metadata from `.info.json` files,
+see `--write-info-json` usage below.
+
+This supports the following formats in file or folder names:
+- `[xxxxxxxx]`
+- `[youtube-xxx]`
+- `[YouTube-xxx]`
+- `[Youtube-xxx]`.
+
+This will find the YouTube id in names, like for example:
+- `Person Of Interest  Soundtrack - John Reese Themes (Compilation) [OR5EnqdnwK0].mp4`
+
+When using this Plugin, please respect YouTube Terms and conditions: https://www.youtube.com/t/terms
+
+Usage
+=====
 
 To download a playlist:
 1. Take video link: https://www.youtube.com/watch?v=f-wWBGo6a2w&list=PL22J3VaeABQD_IZs7y60I3lUrrFTzkpat
@@ -44,7 +62,6 @@ Naming convention for TV Series library:
 
 Notes:
 - The Absolute Series Scanner will support `youtube.id` file in series folder and pass it to the agent through the series title
-- This agent will support the following formats in file or folder names `[xxxxxxxx]`, `[youtube-xxx]`, `[YouTube-xxx]`, and `[Youtube-xxx]`
 - [!] register your own API key and also replace `API_KEY='AIzaSyC2q8yjciNdlYRNdvwbb7NEcDxBkv1Cass'` in `Absolute Series Scanner` codebase and the agent setting `[Agent_youtube_api_key]` OR you will deplete the quota of requests in MY account and metadata will stop for ALL users using default settings.
 - You can use grouping folders and a collection field will be created. If the logs complain about `INFO (__init__:527) - Place correct Plex token in X-Plex-Token.id file in logs folder or in PLEX_LIBRARY_URL variable to have a log per library - https://support.plex.tv/hc/en-us/articles/204059436-Finding-your-account-token-X-Plex-Token`, then create a `Plex Media Server/X-Plex-Token.id` containing the Plex token id by logging on https://app.plex.tv/desktop, then visit https://plex.tv/devices.xml, and find `<MediaContainer><Device ... token="xxxxxxxxxxxxxx">` value.
 
@@ -103,7 +120,8 @@ Made it into a series agent straight away...
 Installation
 ============
 
-The plugin code needs to be put into `Plex Media Server/Plug-ins` folder.
+The plugin code needs to be put into `Plex Media Server/Plug-ins` folder:
+- https://support.plex.tv/articles/201187656-how-do-i-manually-install-a-plugin/
 
 Here is how to find the Plug-in folder location:
 - https://support.plex.tv/hc/en-us/articles/201106098-How-do-I-find-the-Plug-Ins-folder-
@@ -128,6 +146,7 @@ To obtain the code:
 1. Download the Zip file: https://github.com/ZeroQI/YouTube-Agent.bundle/archive/refs/heads/master.zip
 2. Unpack the downloaded Zip and rename the contents as `Youtube-Agent.bundle` (remove `-master`)
 3. Place it inside `Plug-ins` folder
+4. Restart Plex Media Server to make sure that the new plugin will be loaded.
 
 Troubleshooting:
 ================
