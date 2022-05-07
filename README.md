@@ -146,6 +146,7 @@ To obtain the code:
 1. Download the Zip file: https://github.com/ZeroQI/YouTube-Agent.bundle/archive/refs/heads/master.zip
 2. Unpack the downloaded Zip and rename the contents as `Youtube-Agent.bundle` (remove `-master`)
 3. Place it inside `Plug-ins` folder
+4. Restart Plex Media Server to make sure that the new plugin will be loaded.
 
 Troubleshooting:
 ================
