@@ -545,14 +545,16 @@ YOUTUBE_CATEGORY_ID      = {  '1': 'Film & Animation',  '2': 'Autos & Vehicles',
                              '43': 'Shows',            '44': 'Trailers'}
 ### Plex Library XML ###
 Log.Info(u"Library: "+PlexRoot)  #Log.Info(file)
-if os.path.isfile(os.path.join(PlexRoot, "X-Plex-Token.id")):
+token_file_path = os.path.join(PlexRoot, "X-Plex-Token.id")
+if os.path.isfile(token_file_path):
   Log.Info(u"'X-Plex-Token.id' file present")
-  token_file=Data.Load(os.path.join(PlexRoot, "X-Plex-Token.id"))
-  if token_file:  PLEX_LIBRARY_URL += "?X-Plex-Token=" + token_file.strip()  #Log.Info(PLEX_LIBRARY_URL) ##security risk if posting logs with token displayed
+  token_file=Data.Load(token_file_path)
+  if token_file:  PLEX_LIBRARY_URL += "?X-Plex-Token=" + token_file.strip()
+  #Log.Info(PLEX_LIBRARY_URL) ##security risk if posting logs with token displayed
 try:
   library_xml = etree.fromstring(urllib2.urlopen(PLEX_LIBRARY_URL).read())
   for library in library_xml.iterchildren('Directory'):
     for path in library.iterchildren('Location'):
       PLEX_LIBRARY[path.get("path")] = library.get("title")
       Log.Info(u"{} = {}".format(path.get("path"), library.get("title")))
-except Exception as e:  Log.Info(u"Place correct Plex token in X-Plex-Token.id file in logs folder or in PLEX_LIBRARY_URL variable to have a log per library - https://support.plex.tv/hc/en-us/articles/204059436-Finding-your-account-token-X-Plex-Token" + str(e))
+except Exception as e:  Log.Info(u"Place correct Plex token in {} file or in PLEX_LIBRARY_URL variable in Code/__init__.py to have a log per library - https://support.plex.tv/hc/en-us/articles/204059436-Finding-your-account-token-X-Plex-Token, Error: {}".format(token_file_path, str(e)))
