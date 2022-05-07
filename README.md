@@ -85,17 +85,21 @@ H2ODelirious [UCClNRixXlagwAd--5MwJKCw]/
 History
 =======
 
-Forked initially from paulds8 and sander1's 'YouTube-Agent.bundle' movie only agent:
+Forked initially from [@paulds8] and [@sander1]'s `YouTube-Agent.bundle` movie-only agent:
 
-sander1 did the initial movie only agent using a given youtube video id
-https://github.com/sander1/YouTube-Agent.bundle
-https://forums.plex.tv/discussion/83106/rel-youtube-metadata-agent
+[@sander1] did the initial movie only agent using a given YouTube video id:
+- https://github.com/sander1/YouTube-Agent.bundle
+- https://forums.plex.tv/discussion/83106/rel-youtube-metadata-agent
 
-paulds8 did the initial title search fork i had to fix
-https://github.com/paulds8/YouTube-Agent.bundle/tree/namematch
-https://forums.plex.tv/discussion/300800/youtube-agent-matching-on-name
+[@paulds8] did the initial title search fork that [@ZeroQI] had to fix:
+- https://github.com/paulds8/YouTube-Agent.bundle/tree/namematch
+- https://forums.plex.tv/discussion/300800/youtube-agent-matching-on-name
 
 Made it into a series agent straight away...
+
+[@paulds8]: https://github.com/paulds8
+[@sander1]: https://github.com/sander1
+[@ZeroQI]: https://github.com/ZeroQI
 
 Installation
 ============
