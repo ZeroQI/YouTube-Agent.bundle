@@ -3,6 +3,8 @@
 This is a Metadata Agent for downloaded YouTube videos. It works by looking up
 metadata on YouTube using the YouTube video id. It is important to have this id
 in the filename, otherwise this agent can't do the lookup.
+This plugin also supports looking up metadata from `.info.json` files,
+see `--write-info-json` usage below.
 
 This supports the following formats in file or folder names:
 - `[xxxxxxxx]`
