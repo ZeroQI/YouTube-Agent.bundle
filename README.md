@@ -51,7 +51,7 @@ Requirements
 - Do create your own YouTube API key and replace in [Absolute Series Scanner] (ASS) code and agent settings
 - Please use the Absolute Series Scanner to scan your media and leave the YouTube id in the series/movie title
 - leave the YouTube video ID on every file
-- Playlist (preffered) id OR Channel id on series foldername (as Search() need to assign an id to the series)
+- Playlist (preferred) id OR Channel id on series folder name (as `Search()` need to assign an id to the series)
 
 Naming convention for Movie/Home Video library:
 - filename without extension named exactly the same as the YouTube video
