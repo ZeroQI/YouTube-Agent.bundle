@@ -17,6 +17,37 @@ This will find the YouTube id in names, like for example:
 
 When using this Plugin, please respect YouTube Terms and conditions: https://www.youtube.com/t/terms
 
+Installation
+============
+
+The plugin code needs to be put into `Plex Media Server/Plug-ins` folder:
+- https://support.plex.tv/articles/201187656-how-do-i-manually-install-a-plugin/
+
+Here is how to find the Plug-in folder location:
+- https://support.plex.tv/hc/en-us/articles/201106098-How-do-I-find-the-Plug-Ins-folder-
+
+Plex main folder location could be one of:
+
+    * '%LOCALAPPDATA%\Plex Media Server\'                                        # Windows Vista/7/8
+    * '%USERPROFILE%\Local Settings\Application Data\Plex Media Server\'         # Windows XP, 2003, Home Server
+    * '$HOME/Library/Application Support/Plex Media Server/'                     # Mac OS
+    * '$PLEX_HOME/Library/Application Support/Plex Media Server/',               # Linux
+    * '/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/', # Debian,Fedora,CentOS,Ubuntu
+    * '/usr/local/plexdata/Plex Media Server/',                                  # FreeBSD
+    * '/usr/pbi/plexmediaserver-amd64/plexdata/Plex Media Server/',              # FreeNAS
+    * '${JAIL_ROOT}/var/db/plexdata/Plex Media Server/',                         # FreeNAS
+    * '/c/.plex/Library/Application Support/Plex Media Server/',                 # ReadyNAS
+    * '/share/MD0_DATA/.qpkg/PlexMediaServer/Library/Plex Media Server/',        # QNAP
+    * '/volume1/Plex/Library/Application Support/Plex Media Server/',            # Synology, Asustor
+    * '/raid0/data/module/Plex/sys/Plex Media Server/',                          # Thecus
+    * '/raid0/data/PLEX_CONFIG/Plex Media Server/'                               # Thecus Plex community
+
+To obtain the code:
+1. Download the Zip file: https://github.com/ZeroQI/YouTube-Agent.bundle/archive/refs/heads/master.zip
+1. Unpack the downloaded Zip and rename the contents as `Youtube-Agent.bundle` (remove `-master`)
+1. Place it inside `Plug-ins` folder
+1. Restart Plex Media Server to make sure that the new plugin will be loaded.
+
 Usage
 =====
 
@@ -116,37 +147,6 @@ Made it into a series agent straight away...
 [@paulds8]: https://github.com/paulds8
 [@sander1]: https://github.com/sander1
 [@ZeroQI]: https://github.com/ZeroQI
-
-Installation
-============
-
-The plugin code needs to be put into `Plex Media Server/Plug-ins` folder:
-- https://support.plex.tv/articles/201187656-how-do-i-manually-install-a-plugin/
-
-Here is how to find the Plug-in folder location:
-- https://support.plex.tv/hc/en-us/articles/201106098-How-do-I-find-the-Plug-Ins-folder-
-
-Plex main folder location could be one of:
-
-    * '%LOCALAPPDATA%\Plex Media Server\'                                        # Windows Vista/7/8
-    * '%USERPROFILE%\Local Settings\Application Data\Plex Media Server\'         # Windows XP, 2003, Home Server
-    * '$HOME/Library/Application Support/Plex Media Server/'                     # Mac OS
-    * '$PLEX_HOME/Library/Application Support/Plex Media Server/',               # Linux
-    * '/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/', # Debian,Fedora,CentOS,Ubuntu
-    * '/usr/local/plexdata/Plex Media Server/',                                  # FreeBSD
-    * '/usr/pbi/plexmediaserver-amd64/plexdata/Plex Media Server/',              # FreeNAS
-    * '${JAIL_ROOT}/var/db/plexdata/Plex Media Server/',                         # FreeNAS
-    * '/c/.plex/Library/Application Support/Plex Media Server/',                 # ReadyNAS
-    * '/share/MD0_DATA/.qpkg/PlexMediaServer/Library/Plex Media Server/',        # QNAP
-    * '/volume1/Plex/Library/Application Support/Plex Media Server/',            # Synology, Asustor
-    * '/raid0/data/module/Plex/sys/Plex Media Server/',                          # Thecus
-    * '/raid0/data/PLEX_CONFIG/Plex Media Server/'                               # Thecus Plex community    
-
-To obtain the code:
-1. Download the Zip file: https://github.com/ZeroQI/YouTube-Agent.bundle/archive/refs/heads/master.zip
-2. Unpack the downloaded Zip and rename the contents as `Youtube-Agent.bundle` (remove `-master`)
-3. Place it inside `Plug-ins` folder
-4. Restart Plex Media Server to make sure that the new plugin will be loaded.
 
 YouTube API key
 ===============
