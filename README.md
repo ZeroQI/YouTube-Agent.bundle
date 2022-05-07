@@ -10,7 +10,7 @@ This supports the following formats in file or folder names:
 - `[xxxxxxxx]`
 - `[youtube-xxx]`
 - `[YouTube-xxx]`
-- `[Youtube-xxx]`.
+- `[Youtube-xxx]`
 
 This will find the YouTube id in names, like for example:
 - `Person Of Interest  Soundtrack - John Reese Themes (Compilation) [OR5EnqdnwK0].mp4`
