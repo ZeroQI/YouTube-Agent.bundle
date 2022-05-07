@@ -1,22 +1,26 @@
-# YouTube-Agent.bundle Plex Movie & TV Series library agent 
+# YouTube-Agent.bundle: Plex Movie & TV Series library agent
 
 Please respect Youtube Terms and conditions: https://www.youtube.com/t/terms
 
-Download playlist:
-Take video link: https://www.youtube.com/watch?v=f-wWBGo6a2w&list=PL22J3VaeABQD_IZs7y60I3lUrrFTzkpat
-click on top right on playlist name or remove v=video_id https://www.youtube.com/watch?list=PL22J3VaeABQD_IZs7y60I3lUrrFTzkpat
-.\youtube-dl.exe https://www.youtube.com/watch?list=PL22J3VaeABQD_IZs7y60I3lUrrFTzkpat
+To download a playlist:
+1. Take video link: https://www.youtube.com/watch?v=f-wWBGo6a2w&list=PL22J3VaeABQD_IZs7y60I3lUrrFTzkpat
+1. Click on top right on playlist name or remove `v=video_id` from URL: https://www.youtube.com/watch?list=PL22J3VaeABQD_IZs7y60I3lUrrFTzkpat
+1. Run `youtube-dl` command: `youtube-dl https://www.youtube.com/watch?list=PL22J3VaeABQD_IZs7y60I3lUrrFTzkpat`
 
---restrict-filenames
-Restrict filenames to only ASCII characters, and avoid "&" and spaces in filenames, makes the filenames slightly messy but no crash due to unsupported character
+Additionally, you may want to use:
 
-My_Plex_Pass@forums.plex.com script for both channels and playlists in format channel [chanid]\title [videoid].ext:
-- youtube-dl -v --dateafter 20081004 --download-archive /volume1/Youtube/.Downloaded -i -o "/volume1/Youtube/%(uploader)s [%(channel_id)s]/%(playlist_index)s - %(title)s [%(id)s].%(ext)s" -f bestvideo+bestaudio -ci --batch-file=/volume1/Youtube/Channels_to_DL.txt
-- Format generated: "Youtube\Errant Signal [UCm4JnxTxtvItQecKUc4zRhQ]\001 - Thanksgiving Leftovers - Battlefield V [Qgdr8xdqGDE]"
+1. `--restrict-filenames`:
+   Restrict filenames to only ASCII characters, and avoid "&" and
+   spaces in filenames, makes the filenames slightly messy but no crash due to
+   unsupported character.
+
+My_Plex_Pass@forums.plex.com script for both channels and playlists in format `channel name [chanid]\video title [videoid].ext`:
+- `youtube-dl -v --dateafter 20081004 --download-archive /volume1/Youtube/.Downloaded -i -o "/volume1/Youtube/%(uploader)s [%(channel_id)s]/%(playlist_index)s - %(title)s [%(id)s].%(ext)s" -f bestvideo+bestaudio -ci --batch-file=/volume1/Youtube/Channels_to_DL.txt`
+- Example files: `Youtube\Errant Signal [UCm4JnxTxtvItQecKUc4zRhQ]\001 - Thanksgiving Leftovers - Battlefield V [Qgdr8xdqGDE]`
 
 YouTube IDs
-- Playlist id: PL and 16 hexadecimal characters 0-9 and A-F or 32 chars 0-9 a-Z _ - (EX: https://www.youtube.com/watch?v=aCl4SD7SkLE&list=PLMBYlcH3smRxxcXT7G-HHAj5czGS0sZsB)
-- Channel id: PL and 32 hexadecimal characters 0-9 and A-F or 32 chars 0-9 a-Z _ - (EX: (https://www.youtube.com/channel/UCYzPXprvl5Y-Sf0g4vX-m6g)
+- Playlist id: PL and 16 hexadecimal characters 0-9 and A-F or 32 chars 0-9 a-Z _ - (Example: https://www.youtube.com/watch?v=aCl4SD7SkLE&list=PLMBYlcH3smRxxcXT7G-HHAj5czGS0sZsB)
+- Channel id: PL and 32 hexadecimal characters 0-9 and A-F or 32 chars 0-9 a-Z _ - (Example: (https://www.youtube.com/channel/UCYzPXprvl5Y-Sf0g4vX-m6g)
 - Video id: 11 chars long 0-9 a-Z _ -
 
 Requirements
@@ -27,7 +31,7 @@ Requirements
 
 Naming convention for Movie/Home Video library:
 - filename without extension named exactly the same as the YouTube video
-- filename with youtube video id '[xxxxxxxxxx]'or '[youtube-xxxxxxxxxx]'
+- filename with youtube video id `[xxxxxxxxxx]` or `[youtube-xxxxxxxxxx]`
 
 Naming convention for TV Series library:
 - movies have to be put in identically named folder named exactly the same as the YouTube video or have youtube video id
@@ -42,14 +46,14 @@ Note:
 
 
 Movie Library Fields supported:
-- title
-- summary
-- poster
-- rating
-- originally_available_at
-- year
-- genres (many? to test)
-- directors (1)
+- `title`
+- `summary`
+- `poster`
+- `rating`
+- `originally_available_at`
+- `year`
+- `genres` (many? to test)
+- `directors` (1)
 
 Exemple
 =======
