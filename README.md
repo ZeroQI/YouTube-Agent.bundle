@@ -177,7 +177,7 @@ Donation
 You can choose either:
 
 1. Pay link: https://PayPal.Me/ZeroQI
-1. Donate link: A [PayPal] payment, but flagged as donation.
+1. Donate link: A [PayPal] payment, but marked as donation.
    Having money sent as donation you could be eligible for tax return depending
    on the country you pay taxes for.
 
