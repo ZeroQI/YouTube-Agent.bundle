@@ -36,7 +36,9 @@ Additionally, you may want to use:
    The agent will load metadata from the local file if exists.
    This can reduce YouTube API request rate if metadata is obtained from local `.info.json` files.
 
-My_Plex_Pass@forums.plex.com script for both channels and playlists in format `channel name [chanid]\video title [videoid].ext`:
+A `My_Plex_Pass` user script from
+[forums.plex.com](https://forums.plex.tv/t/rel-youtube-metadata-agent/44574/184)
+for both channels and playlists in format `channel name [chanid]\video title [videoid].ext`:
 - `youtube-dl -v --dateafter 20081004 --download-archive /volume1/Youtube/.Downloaded -i -o "/volume1/Youtube/%(uploader)s [%(channel_id)s]/%(playlist_index)s - %(title)s [%(id)s].%(ext)s" -f bestvideo+bestaudio -ci --batch-file=/volume1/Youtube/Channels_to_DL.txt`
 - Example files: `Youtube\Errant Signal [UCm4JnxTxtvItQecKUc4zRhQ]\001 - Thanksgiving Leftovers - Battlefield V [Qgdr8xdqGDE]`
 
