@@ -223,7 +223,7 @@ def Update(metadata, media, lang, force, movie):
         thumb                            = get_thumb(json_video_details)
         if thumb and thumb not in metadata.posters:
           Log(u'poster: "{}" added'.format(thumb))
-          metadata.posters[thumb]        = Proxy.Media(HTTP.Request(Dict(json_video_details, 'thumbnails', '0', 'url')).content, sort_order=1)
+          metadata.posters[thumb]        = Proxy.Media(HTTP.Request(thumb).content, sort_order=1)
         else:  Log(u'thumb: "{}" already present'.format(thumb))
         if Dict(json_video_details, 'statistics', 'likeCount') and int(Dict(json_video_details, 'like_count')) > 0 and Dict(json_video_details, 'dislike_count') and int(Dict(json_video_details, 'dislike_count')) > 0:
           metadata.rating                = float(10*int(Dict(json_video_details, 'like_count'))/(int(Dict(json_video_details, 'dislike_count'))+int(Dict(json_video_details, 'like_count'))));  Log(u'rating: {}'.format(metadata.rating))
