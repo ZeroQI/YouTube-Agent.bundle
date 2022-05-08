@@ -163,6 +163,7 @@ The setup is moderately complicated:
 1. From the top bar choose or create a new project
 1. Follow "API keys" instructions from [registering an application]
 1. Skip the API restrictions part
+1. [Enable YouTube Data API] for the project
 1. Copy the API key from "API key created" dialog
 1. Use that value in Plex Library settings
 1. If you need to obtain the API key any time later, visit [credentials] page
@@ -170,6 +171,7 @@ The setup is moderately complicated:
 [Google Developer Console]: https://console.developers.google.com/
 [registering an application]: https://developers.google.com/youtube/registering_an_application
 [credentials]: https://console.cloud.google.com/apis/credentials
+[Enable YouTube Data API]: https://console.cloud.google.com/apis/library/youtube.googleapis.com
 
 Troubleshooting:
 ================
