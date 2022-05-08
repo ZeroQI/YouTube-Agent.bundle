@@ -184,9 +184,18 @@ def Update(metadata, media, lang, force, movie):
   if movie:
 
     ### Movie - JSON call ###############################################################################################################
-    json_filename = GetMediaDir(media, movie, True).rsplit('.', 1)[0] + ".info.json"
+    filename = media.items[0].parts[0].file if movie else media.filename or media.show
+    dir = GetMediaDir(media, movie)
+    try:                    filename = sanitize_path(filename)
+    except Exception as e:  Log('update() - Exception1: filename: "{}", e: "{}"'.format(filename, e))
+    try:                    filename = os.path.basename(filename)
+    except Exception as e:  Log('update() - Exception2: filename: "{}", e: "{}"'.format(filename, e))
+    try:                    filename = urllib2.unquote(filename)
+    except Exception as e:  Log('update() - Exception3: filename: "{}", e: "{}"'.format(filename, e))
+
+    json_filename = os.path.join(dir, os.path.splitext(filename)[0]+ ".info.json")
+    Log(u'Update: Searching for info file: {}, dir:{}'.format(json_filename, GetMediaDir(media, movie, True)))
     if os.path.exists(json_filename):
-      Log(u'Update using present json file - json_filename: {}'.format(json_filename))
       try:             json_video_details = JSON.ObjectFromString(Core.storage.load(json_filename))
       except IOError:  guid = None
       else:    
