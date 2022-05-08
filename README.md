@@ -167,7 +167,7 @@ The setup is moderately complicated:
 1. Skip the API restrictions part
 1. [Enable YouTube Data API] for the project
 1. Copy the API key from "API key created" dialog
-1. Use that value in Plex Library settings
+1. Place the value to `youtube-key.txt` file in the plugin directory
 1. If you need to obtain the API key any time later, visit [credentials] page
 
 [Google Developer Console]: https://console.developers.google.com/
