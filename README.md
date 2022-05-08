@@ -49,6 +49,13 @@ To obtain the code:
 1. Restart Plex Media Server to make sure that the new plugin will be loaded.
 1. [Create your own YouTube API token](#youtube-api-key) (recommended)
 
+To enable for Library:
+1. Create a new (or update an existing) library
+2. Choose `Manage Library` -> `Edit`
+3. Click on the `Advanced` tab and select Agent: `YoutubeMovie` or `YouTubeSeries` depending on library type
+
+Repeat this for all libraries you wish to use this agent.
+
 Usage
 =====
 
