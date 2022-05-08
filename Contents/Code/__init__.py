@@ -14,7 +14,7 @@ from   io      import open  # open
 def natural_sort_key     (s):  return [int(text) if text.isdigit() else text for text in re.split(re.compile('([0-9]+)'), str(s).lower())]  ### Avoid 1, 10, 2, 20... #Usage: list.sort(key=natural_sort_key), sorted(list, key=natural_sort_key)
 def sanitize_path        (p):  return p if isinstance(p, unicode) else p.decode(sys.getfilesystemencoding()) ### Make sure the path is unicode, if it is not, decode using OS filesystem's encoding ###
 def js_int               (i):  return int(''.join([x for x in list(i or '0') if x.isdigit()]))  # js-like parseInt - https://gist.github.com/douglasmiranda/2174255
-  
+
 ### Return dict value if all fields exists "" otherwise (to allow .isdigit()), avoid key errors
 def Dict(var, *arg, **kwarg):  #Avoid TypeError: argument of type 'NoneType' is not iterable
   """ Return the value of an (imbricated) dictionnary, return "" if doesn't exist unless "default=new_value" specified as end argument
@@ -83,6 +83,13 @@ def img_load(series_root_folder, filename):
     filename = os.path.join(series_root_folder, filename.rsplit('.', 1)[0]+"."+ext)
     if os.path.isfile(filename):  Log(u'local thumbnail found for file %s', filename);  return filename, Core.storage.load(filename)
   return "", None
+
+### get biggest thumbnail available
+def get_thumb(json_video_details):
+  return Dict(json_video_details, 'thumbnails', 3, 'url') \
+     or Dict(json_video_details, 'thumbnails', 2, 'url') \
+     or Dict(json_video_details, 'thumbnails', 1, 'url') \
+     or Dict(json_video_details, 'thumbnails', 0, 'url')
 
 def Start():
   HTTP.CacheTime                  = CACHE_1MONTH
@@ -211,7 +218,7 @@ def Update(metadata, media, lang, force, movie):
         date                             = Datetime.ParseDate(Dict(json_video_details, 'upload_date'));        Log(u'date:  "{}"'.format(date))
         metadata.originally_available_at = date.date()
         metadata.year                    = date.year  #test avoid:  AttributeError: 'TV_Show' object has no attribute named 'year'
-        thumb                            = Dict(json_video_details, 'thumbnails', 3, 'url') or Dict(json_video_details, 'thumbnails', 2, 'url') or Dict(json_video_details, 'thumbnails', 1, 'url') or Dict(json_video_details, 'thumbnails', 0, 'url')
+        thumb                            = get_thumb(json_video_details)
         if thumb and thumb not in metadata.posters:
           Log(u'poster: "{}" added'.format(thumb))
           metadata.posters[thumb]        = Proxy.Media(HTTP.Request(Dict(json_video_details, 'thumbnails', '0', 'url')).content, sort_order=1)
@@ -460,7 +467,7 @@ def Update(metadata, media, lang, force, movie):
                 Log.Info('[?] link:     "https://www.youtube.com/watch?v={}"'.format(videoId))
                 thumb, picture = img_load(series_root_folder, filename)  #Load locally
                 if thumb is None:
-                  thumb = Dict(json_video_details, 'thumbnails', 3, 'url') or Dict(json_video_details, 'thumbnails', 2, 'url') or Dict(json_video_details, 'thumbnails', 1, 'url') or Dict(json_video_details, 'thumbnails', 0, 'url')
+                  thumb = get_thumb(json_video_details)
                   if thumb not in episode.thumbs: picture = HTTP.Request(thumb).content  
                 if thumb and thumb not in episode.thumbs:
                   Log.Info(u'[ ] thumbs:   "{}"'.format(thumb))
