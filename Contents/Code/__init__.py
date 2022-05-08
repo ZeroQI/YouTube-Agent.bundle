@@ -223,7 +223,7 @@ def Update(metadata, media, lang, force, movie):
     try:     json_video_details = json_load( YOUTUBE_json_video_details.format(guid, Prefs['YouTube-Agent_youtube_api_key']) )['items'][0]
     except:  Log(u'json_video_details - Could not retrieve data from YouTube for: ' + guid)
     else:
-      Log('Movie mode - json_video_details - Loaded video details from: "{}"'.format(YOUTUBE_json_video_details, 'personal_key'))
+      Log('Movie mode - json_video_details - Loaded video details from: "{}"'.format(YOUTUBE_json_video_details.format(guid, 'personal_key')))
       date                             = Datetime.ParseDate(json_video_details['snippet']['publishedAt']);  Log('date:  "{}"'.format(date))
       metadata.originally_available_at = date.date()
       metadata.title                   = json_video_details['snippet']['title'];                                                      Log(u'series title:       "{}"'.format(json_video_details['snippet']['title']))
