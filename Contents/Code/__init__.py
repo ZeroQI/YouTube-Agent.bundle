@@ -105,13 +105,16 @@ def Search(results, media, lang, manual, movie):
   Log(u"Search() - dir: {}, filename: {}, displayname: {}".format(dir, filename, displayname))
     
   ### Try loading local JSON file if present
-  json_filename = os.path.splitext(filename)[0]+ ".info.json" #filename.rsplit('.', 1)[0] + ".info.json"
+  json_filename = os.path.join(dir, os.path.splitext(filename)[0]+ ".info.json")
+  Log(u'Searching for info file: {}'.format(json_filename))
   if os.path.exists(json_filename):
-    Log(u'searching for info file - dir: {}, json_filename: {}'.format(dir, json_filename))
     try:     json_video_details = JSON.ObjectFromString(Core.storage.load(json_filename))  #with open(json_filename) as f:  json_video_details = JSON.ObjectFromString(f.read())
-    except:  pass
+    except Exception as e:
+      Log('search() - Unable to load info.json, e: "{}"'.format(e))
     else:
-      results.Append( MetadataSearchResult( id='youtube|{}|{}'.format(Dict(json_video_details, 'id'), os.path.basename(dir)), name=displayname, year=Datetime.ParseDate(Dict(json_video_details, 'upload_date')).year, score=100, lang=lang ) )
+      video_id = Dict(json_video_details, 'id')
+      Log('search() - Loaded json_video_details: {}'.format(video_id))
+      results.Append( MetadataSearchResult( id='youtube|{}|{}'.format(video_id, os.path.basename(dir)), name=displayname, year=Datetime.ParseDate(Dict(json_video_details, 'upload_date')).year, score=100, lang=lang ) )
       Log(u''.ljust(157, '='))
       return
   
