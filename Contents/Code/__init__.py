@@ -14,7 +14,7 @@ from   io      import open  # open
 def natural_sort_key     (s):  return [int(text) if text.isdigit() else text for text in re.split(re.compile('([0-9]+)'), str(s).lower())]  ### Avoid 1, 10, 2, 20... #Usage: list.sort(key=natural_sort_key), sorted(list, key=natural_sort_key)
 def sanitize_path        (p):  return p if isinstance(p, unicode) else p.decode(sys.getfilesystemencoding()) ### Make sure the path is unicode, if it is not, decode using OS filesystem's encoding ###
 def js_int               (i):  return int(''.join([x for x in list(i or '0') if x.isdigit()]))  # js-like parseInt - https://gist.github.com/douglasmiranda/2174255
-  
+
 ### Return dict value if all fields exists "" otherwise (to allow .isdigit()), avoid key errors
 def Dict(var, *arg, **kwarg):  #Avoid TypeError: argument of type 'NoneType' is not iterable
   """ Return the value of an (imbricated) dictionnary, return "" if doesn't exist unless "default=new_value" specified as end argument
@@ -101,6 +101,15 @@ def img_load(series_root_folder, filename):
     if os.path.isfile(filename):  Log(u'local thumbnail found for file %s', filename);  return filename, Core.storage.load(filename)
   return "", None
 
+### get biggest thumbnail available
+def get_thumb(json_video_details):
+  thumbnails = Dict(json_video_details, 'thumbnails')
+  for thumbnail in reversed(thumbnails):
+    return thumbnail['url']
+
+  Log.Error(u'get_thumb(): No thumb found')
+  return None
+
 def Start():
   HTTP.CacheTime                  = CACHE_1MONTH
   HTTP.Headers['User-Agent'     ] = 'Mozilla/5.0 (iPad; CPU OS 7_0_4 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11B554a Safari/9537.54'
@@ -122,13 +131,16 @@ def Search(results, media, lang, manual, movie):
   Log(u"Search() - dir: {}, filename: {}, displayname: {}".format(dir, filename, displayname))
     
   ### Try loading local JSON file if present
-  json_filename = os.path.splitext(filename)[0]+ ".info.json" #filename.rsplit('.', 1)[0] + ".info.json"
+  json_filename = os.path.join(dir, os.path.splitext(filename)[0]+ ".info.json")
+  Log(u'Searching for info file: {}'.format(json_filename))
   if os.path.exists(json_filename):
-    Log(u'searching for info file - dir: {}, json_filename: {}'.format(dir, json_filename))
     try:     json_video_details = JSON.ObjectFromString(Core.storage.load(json_filename))  #with open(json_filename) as f:  json_video_details = JSON.ObjectFromString(f.read())
-    except:  pass
+    except Exception as e:
+      Log('search() - Unable to load info.json, e: "{}"'.format(e))
     else:
-      results.Append( MetadataSearchResult( id='youtube|{}|{}'.format(Dict(json_video_details, 'id'), os.path.basename(dir)), name=displayname, year=Datetime.ParseDate(Dict(json_video_details, 'upload_date')).year, score=100, lang=lang ) )
+      video_id = Dict(json_video_details, 'id')
+      Log('search() - Loaded json_video_details: {}'.format(video_id))
+      results.Append( MetadataSearchResult( id='youtube|{}|{}'.format(video_id, os.path.basename(dir)), name=displayname, year=Datetime.ParseDate(Dict(json_video_details, 'upload_date')).year, score=100, lang=lang ) )
       Log(u''.ljust(157, '='))
       return
   
@@ -198,9 +210,18 @@ def Update(metadata, media, lang, force, movie):
   if movie:
 
     ### Movie - JSON call ###############################################################################################################
-    json_filename = GetMediaDir(media, movie, True).rsplit('.', 1)[0] + ".info.json"
+    filename = media.items[0].parts[0].file if movie else media.filename or media.show
+    dir = GetMediaDir(media, movie)
+    try:                    filename = sanitize_path(filename)
+    except Exception as e:  Log('update() - Exception1: filename: "{}", e: "{}"'.format(filename, e))
+    try:                    filename = os.path.basename(filename)
+    except Exception as e:  Log('update() - Exception2: filename: "{}", e: "{}"'.format(filename, e))
+    try:                    filename = urllib2.unquote(filename)
+    except Exception as e:  Log('update() - Exception3: filename: "{}", e: "{}"'.format(filename, e))
+
+    json_filename = os.path.join(dir, os.path.splitext(filename)[0]+ ".info.json")
+    Log(u'Update: Searching for info file: {}, dir:{}'.format(json_filename, GetMediaDir(media, movie, True)))
     if os.path.exists(json_filename):
-      Log(u'Update using present json file - json_filename: {}'.format(json_filename))
       try:             json_video_details = JSON.ObjectFromString(Core.storage.load(json_filename))
       except IOError:  guid = None
       else:    
@@ -216,10 +237,10 @@ def Update(metadata, media, lang, force, movie):
         date                             = Datetime.ParseDate(Dict(json_video_details, 'upload_date'));        Log(u'date:  "{}"'.format(date))
         metadata.originally_available_at = date.date()
         metadata.year                    = date.year  #test avoid:  AttributeError: 'TV_Show' object has no attribute named 'year'
-        thumb                            = Dict(json_video_details, 'thumbnails', 3, 'url') or Dict(json_video_details, 'thumbnails', 2, 'url') or Dict(json_video_details, 'thumbnails', 1, 'url') or Dict(json_video_details, 'thumbnails', 0, 'url')
+        thumb                            = get_thumb(json_video_details)
         if thumb and thumb not in metadata.posters:
           Log(u'poster: "{}" added'.format(thumb))
-          metadata.posters[thumb]        = Proxy.Media(HTTP.Request(Dict(json_video_details, 'thumbnails', '0', 'url')).content, sort_order=1)
+          metadata.posters[thumb]        = Proxy.Media(HTTP.Request(thumb).content, sort_order=1)
         else:  Log(u'thumb: "{}" already present'.format(thumb))
         if Dict(json_video_details, 'statistics', 'likeCount') and int(Dict(json_video_details, 'like_count')) > 0 and Dict(json_video_details, 'dislike_count') and int(Dict(json_video_details, 'dislike_count')) > 0:
           metadata.rating                = float(10*int(Dict(json_video_details, 'like_count'))/(int(Dict(json_video_details, 'dislike_count'))+int(Dict(json_video_details, 'like_count'))));  Log(u'rating: {}'.format(metadata.rating))
@@ -237,7 +258,7 @@ def Update(metadata, media, lang, force, movie):
     try:     json_video_details = json_load(YOUTUBE_json_video_details, guid)['items'][0]
     except:  Log(u'json_video_details - Could not retrieve data from YouTube for: ' + guid)
     else:
-      Log('Movie mode - json_video_details - Loaded video details from: "{}"'.format(YOUTUBE_json_video_details, 'personal_key'))
+      Log('Movie mode - json_video_details - Loaded video details from: "{}"'.format(YOUTUBE_json_video_details.format(guid, 'personal_key')))
       date                             = Datetime.ParseDate(json_video_details['snippet']['publishedAt']);  Log('date:  "{}"'.format(date))
       metadata.originally_available_at = date.date()
       metadata.title                   = json_video_details['snippet']['title'];                                                      Log(u'series title:       "{}"'.format(json_video_details['snippet']['title']))
@@ -465,7 +486,7 @@ def Update(metadata, media, lang, force, movie):
                 Log.Info('[?] link:     "https://www.youtube.com/watch?v={}"'.format(videoId))
                 thumb, picture = img_load(series_root_folder, filename)  #Load locally
                 if thumb is None:
-                  thumb = Dict(json_video_details, 'thumbnails', 3, 'url') or Dict(json_video_details, 'thumbnails', 2, 'url') or Dict(json_video_details, 'thumbnails', 1, 'url') or Dict(json_video_details, 'thumbnails', 0, 'url')
+                  thumb = get_thumb(json_video_details)
                   if thumb not in episode.thumbs: picture = HTTP.Request(thumb).content  
                 if thumb and thumb not in episode.thumbs:
                   Log.Info(u'[ ] thumbs:   "{}"'.format(thumb))
