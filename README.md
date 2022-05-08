@@ -10,7 +10,7 @@ This supports the following formats in file or folder names:
 - `[xxxxxxxx]`
 - `[youtube-xxx]`
 - `[YouTube-xxx]`
-- `[Youtube-xxx]`.
+- `[Youtube-xxx]`
 
 This will find the YouTube id in names, like for example:
 - `Person Of Interest  Soundtrack - John Reese Themes (Compilation) [OR5EnqdnwK0].mp4`
@@ -68,7 +68,9 @@ Additionally, you may want to use:
    The agent will load metadata from the local file if exists.
    This can reduce YouTube API request rate if metadata is obtained from local `.info.json` files.
 
-My_Plex_Pass@forums.plex.com script for both channels and playlists in format `channel name [chanid]\video title [videoid].ext`:
+A `My_Plex_Pass` user script from
+[forums.plex.com](https://forums.plex.tv/t/rel-youtube-metadata-agent/44574/184)
+for both channels and playlists in format `channel name [chanid]\video title [videoid].ext`:
 - `youtube-dl -v --dateafter 20081004 --download-archive /volume1/Youtube/.Downloaded -i -o "/volume1/Youtube/%(uploader)s [%(channel_id)s]/%(playlist_index)s - %(title)s [%(id)s].%(ext)s" -f bestvideo+bestaudio -ci --batch-file=/volume1/Youtube/Channels_to_DL.txt`
 - Example files: `Youtube\Errant Signal [UCm4JnxTxtvItQecKUc4zRhQ]\001 - Thanksgiving Leftovers - Battlefield V [Qgdr8xdqGDE]`
 
@@ -81,7 +83,7 @@ Requirements
 - Do create your own YouTube API key and replace in [Absolute Series Scanner] (ASS) code and agent settings
 - Please use the Absolute Series Scanner to scan your media and leave the YouTube id in the series/movie title
 - leave the YouTube video ID on every file
-- Playlist (preffered) id OR Channel id on series foldername (as Search() need to assign an id to the series)
+- Playlist (preferred) id OR Channel id on series folder name (as `Search()` need to assign an id to the series)
 
 Naming convention for Movie/Home Video library:
 - filename without extension named exactly the same as the YouTube video
@@ -194,8 +196,15 @@ Support thread for agent:
 - https://github.com/ZeroQI/YouTube-Agent.bundle/issues (proven or confident enough it's a bug. Include the symptoms, the logs mentionned above)
 - https://forums.plex.tv/discussion/83106/rel-youtube-metadata-agent/p5 (not sure if bug, if bug will create a gihub issue ticket)
 
-Donation link:
-==============
-PayPal.Me/ZeroQI or https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=S8CUKCX4CWBBG&lc=IE&item_name=Plex%20movies%20and%20TV%20series%20Youtube%20Agent&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted
+Donation
+========
 
+You can choose either:
+
+1. Pay link: https://PayPal.Me/ZeroQI
+1. Donate link: A [PayPal] payment, but marked as donation.
+   Having money sent as donation you could be eligible for tax return depending
+   on the country you pay taxes for.
+
+[PayPal]: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=S8CUKCX4CWBBG&lc=IE&item_name=Plex%20movies%20and%20TV%20series%20Youtube%20Agent&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted
 [Absolute Series Scanner]: https://github.com/ZeroQI/Absolute-Series-Scanner
