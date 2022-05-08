@@ -86,10 +86,12 @@ def img_load(series_root_folder, filename):
 
 ### get biggest thumbnail available
 def get_thumb(json_video_details):
-  return Dict(json_video_details, 'thumbnails', 3, 'url') \
-     or Dict(json_video_details, 'thumbnails', 2, 'url') \
-     or Dict(json_video_details, 'thumbnails', 1, 'url') \
-     or Dict(json_video_details, 'thumbnails', 0, 'url')
+  thumbnails = Dict(json_video_details, 'thumbnails')
+  for thumbnail in reversed(thumbnails):
+    return thumbnail['url']
+
+  Log.Error(u'get_thumb(): No thumb found')
+  return None
 
 def Start():
   HTTP.CacheTime                  = CACHE_1MONTH
