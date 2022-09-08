@@ -244,9 +244,10 @@ def Update(metadata, media, lang, force, movie):
         if Prefs['add_user_as_director']:
           metadata.directors.clear()
           try:
+            director            = Dict(json_video_details, 'uploader');
             meta_director       = metadata.directors.new()
-            meta_director.name  = channel_title
-            Log('director: '+ channel_title)
+            meta_director.name  = director
+            Log('director: '+ director)
           except:  pass
         return
 
