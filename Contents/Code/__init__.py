@@ -571,7 +571,7 @@ YOUTUBE_PLAYLIST_DETAILS = YOUTUBE_API_BASE_URL + 'playlists?part=snippet,conten
 YOUTUBE_PLAYLIST_REGEX   = Regex('\[(?:youtube(|3)\-)?(?P<id>PL[^\[\]]{16}|PL[^\[\]]{32}|UU[^\[\]]{22}|FL[^\[\]]{22}|LP[^\[\]]{22}|RD[^\[\]]{22}|UC[^\[\]]{22}|HC[^\[\]]{22})\]',  Regex.IGNORECASE)  # https://regex101.com/r/37x8wI/2
 YOUTUBE_VIDEO_SEARCH     = YOUTUBE_API_BASE_URL + 'search?&maxResults=1&part=snippet&q={}&key={}'
 YOUTUBE_json_video_details    = YOUTUBE_API_BASE_URL + 'videos?part=snippet,contentDetails,statistics&id={}&key={}'
-YOUTUBE_VIDEO_REGEX      = Regex('[\[_](?:youtube\-)?(?P<id>[a-z0-9\-_]{11})[\]_]', Regex.IGNORECASE) # https://regex101.com/r/BFKkGc/3/
+YOUTUBE_VIDEO_REGEX      = Regex('(?:^\d{8}_|\[(?:youtube\-)?)(?P<id>[a-z0-9\-_]{11})(?:\]|_)', Regex.IGNORECASE) # https://regex101.com/r/BFKkGc/3/
 YOUTUBE_CATEGORY_ID      = {  '1': 'Film & Animation',  '2': 'Autos & Vehicles',  '10': 'Music',          '15': 'Pets & Animals',        '17': 'Sports',                 '18': 'Short Movies',
                              '19': 'Travel & Events',  '20': 'Gaming',            '21': 'Videoblogging',  '22': 'People & Blogs',        '23': 'Comedy',                 '24': 'Entertainment',
                              '25': 'News & Politics',  '26': 'Howto & Style',     '27': 'Education',      '28': 'Science & Technology',  '29': 'Nonprofits & Activism',  '30': 'Movies',
