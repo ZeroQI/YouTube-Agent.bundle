@@ -8,6 +8,7 @@ import inspect              # getfile, currentframe
 import urllib2              #
 from   lxml    import etree #
 from   io      import open  # open
+import hashlib
 
 ###Mini Functions ###
 def natural_sort_key     (s):  return [int(text) if text.isdigit() else text for text in re.split(re.compile('([0-9]+)'), str(s).lower())]  ### Avoid 1, 10, 2, 20... #Usage: list.sort(key=natural_sort_key), sorted(list, key=natural_sort_key)
@@ -23,6 +24,36 @@ def Dict(var, *arg, **kwarg):  #Avoid TypeError: argument of type 'NoneType' is 
     if isinstance(var, dict) and key and key in var or isinstance(var, list) and isinstance(key, int) and 0<=key<len(var):  var = var[key]
     else:  return kwarg['default'] if kwarg and 'default' in kwarg else ""   # Allow Dict(var, tvdbid).isdigit() for example
   return kwarg['default'] if var in (None, '', 'N/A', 'null') and kwarg and 'default' in kwarg else "" if var in (None, '', 'N/A', 'null') else var
+
+### Used to Convert Crowd Sourced Video Titles to Title Case from Sentence Case
+def uppercase_regex(a):
+    return a.group(1) + a.group(2).upper()
+
+def titlecase(input_string):
+    return re.sub("(^|\s)(\S)", uppercase_regex, input_string)
+
+### These calls use DeArrow Created By Ajay Ramachandran to Obtain a Crowd Sourced Video Title
+def DeArrow(video_id):
+  api_url = 'https://sponsor.ajay.app'
+
+  hash = hashlib.sha256(video_id.encode('ascii')).hexdigest()
+  
+  # DeArrow API recommends using first 4 hash characters.
+  #url = f'{api_url}/api/branding/{hash[:4]}'
+  url = '{api_url}/api/branding/{hash}'.format(api_url = api_url, hash = hash[:4])
+
+  try:
+    data_json = {}
+    data_json = JSON.ObjectFromURL(url)
+  except:
+    crowd_sourced_title = ''
+
+  try:
+    crowd_sourced_title = titlecase(Dict(data_json[video_id]['titles'][0], 'title'))
+  except:
+    crowd_sourced_title = ''
+
+  return crowd_sourced_title
 
 ### Convert ISO8601 Duration format into seconds ###
 def ISO8601DurationToSeconds(duration):
@@ -224,11 +255,18 @@ def Update(metadata, media, lang, force, movie):
       else:    
         guid          = Dict(json_video_details, 'id')
         channel_id    = Dict(json_video_details, 'channel_id')
-        
+
         ### Movie - Local JSON
         Log.Info(u'update() using json file json_video_details - Loaded video details from: "{}"'.format(json_filename))
         metadata.title                   = Dict(json_video_details, 'title');                                  Log(u'series title:       "{}"'.format(Dict(json_video_details, 'title')))
         metadata.summary                 = Dict(json_video_details, 'description');                            Log(u'series description: '+Dict(json_video_details, 'description').replace('\n', '. '))
+
+        crowd_sourced_title = DeArrow(guid)
+        if crowd_sourced_title != '':
+          metadata.original_title = metadata.title
+          metadata.summary = 'Original Title: ' + metadata.title + '\r\n\r\n' + metadata.summary
+          metadata.title = crowd_sourced_title
+
         metadata.duration                = Dict(json_video_details, 'duration');                               Log(u'series duration:    "{}"->"{}"'.format(Dict(json_video_details, 'duration'), metadata.duration))
         metadata.genres                  = Dict(json_video_details, 'categories');                             Log(u'genres: '+str([x for x in metadata.genres]))
         date                             = Datetime.ParseDate(Dict(json_video_details, 'upload_date'));        Log(u'date:  "{}"'.format(date))
@@ -261,6 +299,13 @@ def Update(metadata, media, lang, force, movie):
       metadata.originally_available_at = date.date()
       metadata.title                   = json_video_details['snippet']['title'];                                                      Log(u'series title:       "{}"'.format(json_video_details['snippet']['title']))
       metadata.summary                 = json_video_details['snippet']['description'];                                                Log(u'series description: '+json_video_details['snippet']['description'].replace('\n', '. '))
+
+      crowd_sourced_title = DeArrow(guid)
+      if crowd_sourced_title != '':
+        metadata.original_title = metadata.title
+        metadata.summary = 'Original Title: ' + metadata.title + '\r\n\r\n' + metadata.summary
+        metadata.title = crowd_sourced_title
+
       metadata.duration                = ISO8601DurationToSeconds(json_video_details['contentDetails']['duration'])*1000;             Log(u'series duration:    "{}"->"{}"'.format(json_video_details['contentDetails']['duration'], metadata.duration))
       metadata.genres                  = [YOUTUBE_CATEGORY_ID[id] for id in json_video_details['snippet']['categoryId'].split(',')];  Log(u'genres: '+str([x for x in metadata.genres]))
       metadata.year                    = date.year;                                                                              Log(u'movie year: {}'.format(date.year))
