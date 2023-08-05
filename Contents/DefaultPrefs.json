@@ -1,5 +1,6 @@
 [
   { "id":"add_user_as_director",          "label":"Set YouTube usernames as director in metadata",  "type":"bool", "default":"false"                                     },
+  { "id":"use_crowd_sourced_titles",      "label":"Use Crowd Sourced Video Titles from DeArrow",    "type":"bool", "default":"false"                                     },
   { "id":"media_poster_source",           "label":"Media Poster",                                   "type":"enum", "default":"Channel", "values": ["Channel", "Episode"] },
   { "id":"YouTube-Agent_youtube_api_key", "label":"YouTube API Key (put your own key)",             "type":"text", "default":"AIzaSyC2q8yjciNdlYRNdvwbb7NEcDxBkv1Cass"   },
 ]
