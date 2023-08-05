@@ -39,20 +39,27 @@ def DeArrow(video_id):
   hash = hashlib.sha256(video_id.encode('ascii')).hexdigest()
   
   # DeArrow API recommends using first 4 hash characters.
-  #url = f'{api_url}/api/branding/{hash[:4]}'
   url = '{api_url}/api/branding/{hash}'.format(api_url = api_url, hash = hash[:4])
 
+  #HTTP.ClearCache()
+  HTTP.CacheTime = 0
+
+  crowd_sourced_title = ''
+  
   try:
-    data_json = {}
     data_json = JSON.ObjectFromURL(url)
   except:
-    crowd_sourced_title = ''
+    Log.Error(u'DeArrow(): Error while loading JSON.ObjectFromURL. URL: '+ url)
 
   try:
-    crowd_sourced_title = titlecase(Dict(data_json[video_id]['titles'][0], 'title'))
+    first_title_obj = data_json[video_id]['titles'][0]
+    if (first_title_obj['votes'] >= 0 and first_title_obj['locked'] == False and first_title_obj['original'] == False):
+      crowd_sourced_title = titlecase(first_title_obj['title'])
   except:
-    crowd_sourced_title = ''
+    Log.Info(u'DeArrow(): No Crowd Sourced Title Found for Video ID: ' + video_id)
 
+  HTTP.CacheTime = CACHE_1MONTH
+  
   return crowd_sourced_title
 
 ### Convert ISO8601 Duration format into seconds ###
@@ -261,11 +268,12 @@ def Update(metadata, media, lang, force, movie):
         metadata.title                   = Dict(json_video_details, 'title');                                  Log(u'series title:       "{}"'.format(Dict(json_video_details, 'title')))
         metadata.summary                 = Dict(json_video_details, 'description');                            Log(u'series description: '+Dict(json_video_details, 'description').replace('\n', '. '))
 
-        crowd_sourced_title = DeArrow(guid)
-        if crowd_sourced_title != '':
-          metadata.original_title = metadata.title
-          metadata.summary = 'Original Title: ' + metadata.title + '\r\n\r\n' + metadata.summary
-          metadata.title = crowd_sourced_title
+        if Prefs['use_crowd_sourced_titles'] == True:
+          crowd_sourced_title = DeArrow(guid)
+          if crowd_sourced_title != '':
+            metadata.original_title = metadata.title
+            metadata.summary = 'Original Title: ' + metadata.title + '\r\n\r\n' + metadata.summary
+            metadata.title = crowd_sourced_title
 
         metadata.duration                = Dict(json_video_details, 'duration');                               Log(u'series duration:    "{}"->"{}"'.format(Dict(json_video_details, 'duration'), metadata.duration))
         metadata.genres                  = Dict(json_video_details, 'categories');                             Log(u'genres: '+str([x for x in metadata.genres]))
@@ -300,11 +308,12 @@ def Update(metadata, media, lang, force, movie):
       metadata.title                   = json_video_details['snippet']['title'];                                                      Log(u'series title:       "{}"'.format(json_video_details['snippet']['title']))
       metadata.summary                 = json_video_details['snippet']['description'];                                                Log(u'series description: '+json_video_details['snippet']['description'].replace('\n', '. '))
 
-      crowd_sourced_title = DeArrow(guid)
-      if crowd_sourced_title != '':
-        metadata.original_title = metadata.title
-        metadata.summary = 'Original Title: ' + metadata.title + '\r\n\r\n' + metadata.summary
-        metadata.title = crowd_sourced_title
+      if Prefs['use_crowd_sourced_titles'] == True:
+        crowd_sourced_title = DeArrow(guid)
+        if crowd_sourced_title != '':
+          metadata.original_title = metadata.title
+          metadata.summary = 'Original Title: ' + metadata.title + '\r\n\r\n' + metadata.summary
+          metadata.title = crowd_sourced_title
 
       metadata.duration                = ISO8601DurationToSeconds(json_video_details['contentDetails']['duration'])*1000;             Log(u'series duration:    "{}"->"{}"'.format(json_video_details['contentDetails']['duration'], metadata.duration))
       metadata.genres                  = [YOUTUBE_CATEGORY_ID[id] for id in json_video_details['snippet']['categoryId'].split(',')];  Log(u'genres: '+str([x for x in metadata.genres]))
@@ -375,7 +384,13 @@ def Update(metadata, media, lang, force, movie):
         if title: metadata.title = title
         metadata.originally_available_at = Datetime.ParseDate(Dict(json_playlist_details, 'snippet', 'publishedAt')).date();  Log.Info('[ ] publishedAt:  {}'.format(Dict(json_playlist_details, 'snippet', 'publishedAt' )))
         metadata.summary                 = Dict(json_playlist_details, 'snippet', 'description');                             Log.Info('[ ] summary:     "{}"'.format((Dict(json_playlist_details, 'snippet', 'description').replace('\n', '. '))))
-        
+
+        if Prefs['use_crowd_sourced_titles'] == True:
+          crowd_sourced_title = DeArrow(guid)
+          if crowd_sourced_title != '':
+            metadata.summary = 'Original Title: ' + metadata.title + '\r\n\r\n' + metadata.summary
+            metadata.title = crowd_sourced_title
+
       Log.Info('[?] json_playlist_items')
       try:                    json_playlist_items = json_load(YOUTUBE_PLAYLIST_ITEMS, guid)
       except Exception as e:  Log.Info('[!] json_playlist_items exception: {}, url: {}'.format(e, YOUTUBE_PLAYLIST_ITEMS.format(guid, 'personal_key')))
@@ -403,7 +418,13 @@ def Update(metadata, media, lang, force, movie):
             summary += u'{} subscribers, '.format(Dict(json_channel_details, 'statistics', 'subscriberCount'))
             summary += u'{} views'.format(Dict(json_channel_details, 'statistics', 'viewCount'))
             metadata.summary = sanitize_path(summary);  Log.Info(u'[ ] summary:     "{}"'.format(summary))  #
-        
+
+        if Prefs['use_crowd_sourced_titles'] == True:
+          crowd_sourced_title = DeArrow(guid)
+          if crowd_sourced_title != '':
+            metadata.summary = 'Original Title: ' + metadata.title + '\r\n\r\n' + metadata.summary
+            metadata.title = crowd_sourced_title
+
         if Dict(json_channel_details,'snippet','country') and Dict(json_channel_details,'snippet','country') not in metadata.countries:
           metadata.countries.add(Dict(json_channel_details,'snippet','country'));  Log.Info('[ ] country: {}'.format(Dict(json_channel_details,'snippet','country') ))
 
