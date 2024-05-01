@@ -155,7 +155,7 @@ def Start():
 ### Assign unique ID ###
 def Search(results, media, lang, manual, movie):
   
-  displayname = sanitize_path(os.path.basename(media.name if movie else media.show))
+  displayname = sanitize_path(os.path.basename((media.name if movie else media.show) or "") )
   filename    = media.items[0].parts[0].file if movie else media.filename or media.show
   dir         = GetMediaDir(media, movie)
   try:                    filename = sanitize_path(filename)
