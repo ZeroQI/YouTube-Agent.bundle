@@ -403,7 +403,9 @@ def Update(metadata, media, lang, force, movie):
     
     ### Series - Channel ###############################################################################################################
     if channel_id.startswith('UC') or channel_id.startswith('HC'):
-      try:                    json_channel_details  = json_load(YOUTUBE_CHANNEL_DETAILS, channel_id)['items'][0]
+      try:
+        json_channel_details  = json_load(YOUTUBE_CHANNEL_DETAILS, channel_id)['items'][0]
+        json_channel_items    = json_load(YOUTUBE_CHANNEL_ITEMS.format(channel_id))
       except Exception as e:  Log('exception: {}, url: {}'.format(e, guid))
       else:
         
