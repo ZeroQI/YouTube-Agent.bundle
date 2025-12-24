@@ -5,14 +5,23 @@ import sys                  # getdefaultencoding, getfilesystemencoding, platfor
 import os                   # path.abspath, join, dirname
 import re                   #
 import inspect              # getfile, currentframe
-import urllib2              #
+import urllib.request       # replaces urllib2
+import urllib.parse         # replaces urllib2
 from   lxml    import etree #
 from   io      import open  # open
 import hashlib
 
 ###Mini Functions ###
 def natural_sort_key     (s):  return [int(text) if text.isdigit() else text for text in re.split(re.compile('([0-9]+)'), str(s).lower())]  ### Avoid 1, 10, 2, 20... #Usage: list.sort(key=natural_sort_key), sorted(list, key=natural_sort_key)
-def sanitize_path        (p):  return p if isinstance(p, unicode) else p.decode(sys.getfilesystemencoding()) ### Make sure the path is unicode, if it is not, decode using OS filesystem's encoding ###
+def sanitize_path        (p):
+  """Ensure path is a proper string with UTF-8 encoding. In Python 3, str is unicode by default."""
+  if isinstance(p, bytes):
+    # Try UTF-8 first (most common), fall back to filesystem encoding
+    try:
+      return p.decode('utf-8')
+    except UnicodeDecodeError:
+      return p.decode(sys.getfilesystemencoding(), errors='replace')
+  return str(p) if p is not None else ''
 def js_int               (i):  return int(''.join([x for x in list(i or '0') if x.isdigit()]))  # js-like parseInt - https://gist.github.com/douglasmiranda/2174255
 
 ### Return dict value if all fields exists "" otherwise (to allow .isdigit()), avoid key errors
@@ -30,7 +39,7 @@ def uppercase_regex(a):
     return a.group(1) + a.group(2).upper()
 
 def titlecase(input_string):
-    return re.sub("(^|\s)(\S)", uppercase_regex, input_string)
+    return re.sub(r"(^|\s)(\S)", uppercase_regex, input_string)
 
 ### These calls use DeArrow Created By Ajay Ramachandran to Obtain a Crowd Sourced Video Title
 def DeArrow(video_id):
@@ -64,7 +73,7 @@ def DeArrow(video_id):
 
 ### Convert ISO8601 Duration format into seconds ###
 def ISO8601DurationToSeconds(duration):
-  try:     match = re.match('PT(\d+H)?(\d+M)?(\d+S)?', duration).groups()
+  try:     match = re.match(r'PT(\d+H)?(\d+M)?(\d+S)?', duration).groups()
   except:  return 0
   else:    return 3600 * js_int(match[0]) + 60 * js_int(match[1]) + js_int(match[2])
 
@@ -162,7 +171,7 @@ def Search(results, media, lang, manual, movie):
   except Exception as e:  Log('search() - Exception1: filename: "{}", e: "{}"'.format(filename, e))
   try:                    filename = os.path.basename(filename)
   except Exception as e:  Log('search() - Exception2: filename: "{}", e: "{}"'.format(filename, e))
-  try:                    filename = urllib2.unquote(filename)
+  try:                    filename = urllib.parse.unquote(filename)
   except Exception as e:  Log('search() - Exception3: filename: "{}", e: "{}"'.format(filename, e))
   Log(u''.ljust(157, '='))
   Log(u"Search() - dir: {}, filename: {}, displayname: {}".format(dir, filename, displayname))
@@ -180,8 +189,9 @@ def Search(results, media, lang, manual, movie):
   except Exception as e:  Log('search() - filename: "{}" Regex failed to find YouTube id, error: "{}"'.format(filename, e))
   
   if movie:  Log.Info(filename)
-  else:    
-    s = media.seasons.keys()[0] if media.seasons.keys()[0]!='0' else media.seasons.keys()[1] if len(media.seasons.keys()) >1 else None
+  else:
+    season_keys = list(media.seasons.keys())
+    s = season_keys[0] if season_keys[0]!='0' else season_keys[1] if len(season_keys) >1 else None
     if s:
       result = YOUTUBE_PLAYLIST_REGEX.search(os.path.basename(os.path.dirname(dir)))
       guid   = result.group('id') if result else ''
@@ -251,7 +261,7 @@ def Update(metadata, media, lang, force, movie):
     except Exception as e:  Log('update() - Exception1: filename: "{}", e: "{}"'.format(filename, e))
     try:                    filename = os.path.basename(filename)
     except Exception as e:  Log('update() - Exception2: filename: "{}", e: "{}"'.format(filename, e))
-    try:                    filename = urllib2.unquote(filename)
+    try:                    filename = urllib.parse.unquote(filename)
     except Exception as e:  Log('update() - Exception3: filename: "{}", e: "{}"'.format(filename, e))
 
     json_filename = os.path.join(dir, os.path.splitext(filename)[0]+ ".info.json")
@@ -354,10 +364,10 @@ def Update(metadata, media, lang, force, movie):
 
       ### Extract season and transparent folder to reduce complexity and use folder as serie name ###
       reverse_path, season_folder_first = list(reversed(path.split(os.sep))), False
-      SEASON_RX = [ '^Specials',                                                                                                                                           # Specials (season 0)
-                    '^(?P<show>.*)?[\._\-\— ]*?(Season|Series|Book|Saison|Livre|Temporada|[Ss])[\._\—\- ]*?(?P<season>\d{1,4}).*?',                                        # (title) S01
-                    '^(?P<show>.*)?[\._\-\— ]*?Volume[\._\-\— ]*?(?P<season>(?=[MDCLXVI])M*D?C{0,4}L?X{0,4}V?I{0,4}).*?',                                                  # (title) S01
-                    '^(Saga|(Story )?Ar[kc])']                                                                                                                             # Last entry, folder name droped but files kept: Saga / Story Ar[kc] / Ar[kc]
+      SEASON_RX = [ r'^Specials',                                                                                                                                           # Specials (season 0)
+                    r'^(?P<show>.*)?[\._\-\— ]*?(Season|Series|Book|Saison|Livre|Temporada|[Ss])[\._\—\- ]*?(?P<season>\d{1,4}).*?',                                        # (title) S01
+                    r'^(?P<show>.*)?[\._\-\— ]*?Volume[\._\-\— ]*?(?P<season>(?=[MDCLXVI])M*D?C{0,4}L?X{0,4}V?I{0,4}).*?',                                                  # (title) S01
+                    r'^(Saga|(Story )?Ar[kc])']                                                                                                                             # Last entry, folder name droped but files kept: Saga / Story Ar[kc] / Ar[kc]
       for folder in reverse_path[:-1]:                 # remove root folder from test, [:-1] Doesn't thow errors but gives an empty list if items don't exist, might not be what you want in other cases
         for rx in SEASON_RX[:-1]:                      # in anime, more specials folders than season folders, so doing it first
           if re.match(rx, folder, re.IGNORECASE):      # get season number but Skip last entry in seasons (skipped folders)
@@ -410,7 +420,7 @@ def Update(metadata, media, lang, force, movie):
       else:
         
         if not title:
-          title          = re.sub( "\s*\[.*?\]\s*"," ",series_folder)  #instead of path use series foldername
+          title          = re.sub(r"\s*\[.*?\]\s*"," ",series_folder)  #instead of path use series foldername
           metadata.title = title
         Log.Info('[ ] title:        "{}", metadata.title: "{}"'.format(title, metadata.title))
         if not Dict(json_playlist_details, 'snippet', 'description'):
@@ -432,7 +442,7 @@ def Update(metadata, media, lang, force, movie):
 
         ### Playlist with cast coming from multiple chan entries in youtube.id file ###############################################################################################################
         if os.path.exists(os.path.join(dir, 'youtube.id')):
-          with open(os.path.join(dir, 'youtube.id')) as f:
+          with open(os.path.join(dir, 'youtube.id'), encoding='utf-8') as f:
             metadata.roles.clear()
             for line in f.readlines():
               try:                    json_channel_details = json_load(YOUTUBE_CHANNEL_DETAILS, line.rstrip())['items'][0]
@@ -633,13 +643,13 @@ PLEX_LIBRARY_URL         = "http://127.0.0.1:32400/library/sections/"    # Allow
 YOUTUBE_API_BASE_URL     = "https://www.googleapis.com/youtube/v3/"
 YOUTUBE_CHANNEL_ITEMS    = YOUTUBE_API_BASE_URL + 'search?order=date&part=snippet&type=video&maxResults=50&channelId={}&key={}'
 YOUTUBE_CHANNEL_DETAILS  = YOUTUBE_API_BASE_URL + 'channels?part=snippet%2CcontentDetails%2Cstatistics%2CbrandingSettings&id={}&key={}'
-YOUTUBE_CHANNEL_REGEX    = Regex('\[(?:youtube(|2)\-)?(?P<id>UC[a-zA-Z0-9\-_]{22}|HC[a-zA-Z0-9\-_]{22})\]')
+YOUTUBE_CHANNEL_REGEX    = Regex(r'\[(?:youtube(|2)\-)?(?P<id>UC[a-zA-Z0-9\-_]{22}|HC[a-zA-Z0-9\-_]{22})\]')
 YOUTUBE_PLAYLIST_ITEMS   = YOUTUBE_API_BASE_URL + 'playlistItems?part=snippet,contentDetails&maxResults=50&playlistId={}&key={}'
 YOUTUBE_PLAYLIST_DETAILS = YOUTUBE_API_BASE_URL + 'playlists?part=snippet,contentDetails&id={}&key={}'
-YOUTUBE_PLAYLIST_REGEX   = Regex('\[(?:youtube(|3)\-)?(?P<id>PL[^\[\]]{16}|PL[^\[\]]{32}|UU[^\[\]]{22}|FL[^\[\]]{22}|LP[^\[\]]{22}|RD[^\[\]]{22}|UC[^\[\]]{22}|HC[^\[\]]{22})\]',  Regex.IGNORECASE)  # https://regex101.com/r/37x8wI/2
+YOUTUBE_PLAYLIST_REGEX   = Regex(r'\[(?:youtube(|3)\-)?(?P<id>PL[^\[\]]{16}|PL[^\[\]]{32}|UU[^\[\]]{22}|FL[^\[\]]{22}|LP[^\[\]]{22}|RD[^\[\]]{22}|UC[^\[\]]{22}|HC[^\[\]]{22})\]',  Regex.IGNORECASE)  # https://regex101.com/r/37x8wI/2
 YOUTUBE_VIDEO_SEARCH     = YOUTUBE_API_BASE_URL + 'search?&maxResults=1&part=snippet&q={}&key={}'
 YOUTUBE_json_video_details    = YOUTUBE_API_BASE_URL + 'videos?part=snippet,contentDetails,statistics&id={}&key={}'
-YOUTUBE_VIDEO_REGEX      = Regex('(?:^\d{8}_|\[(?:youtube\-)?)(?P<id>[a-z0-9\-_]{11})(?:\]|_)', Regex.IGNORECASE) # https://regex101.com/r/zlHKPD/1
+YOUTUBE_VIDEO_REGEX      = Regex(r'(?:^\d{8}_|\[(?:youtube\-)?)(?P<id>[a-z0-9\-_]{11})(?:\]|_)', Regex.IGNORECASE) # https://regex101.com/r/zlHKPD/1
 YOUTUBE_CATEGORY_ID      = {  '1': 'Film & Animation',  '2': 'Autos & Vehicles',  '10': 'Music',          '15': 'Pets & Animals',        '17': 'Sports',                 '18': 'Short Movies',
                              '19': 'Travel & Events',  '20': 'Gaming',            '21': 'Videoblogging',  '22': 'People & Blogs',        '23': 'Comedy',                 '24': 'Entertainment',
                              '25': 'News & Politics',  '26': 'Howto & Style',     '27': 'Education',      '28': 'Science & Technology',  '29': 'Nonprofits & Activism',  '30': 'Movies',
@@ -655,7 +665,7 @@ if os.path.isfile(token_file_path):
   if token_file:  PLEX_LIBRARY_URL += "?X-Plex-Token=" + token_file.strip()
   #Log.Info(PLEX_LIBRARY_URL) ##security risk if posting logs with token displayed
 try:
-  library_xml = etree.fromstring(urllib2.urlopen(PLEX_LIBRARY_URL).read())
+  library_xml = etree.fromstring(urllib.request.urlopen(PLEX_LIBRARY_URL).read())
   for library in library_xml.iterchildren('Directory'):
     for path in library.iterchildren('Location'):
       PLEX_LIBRARY[path.get("path")] = library.get("title")
